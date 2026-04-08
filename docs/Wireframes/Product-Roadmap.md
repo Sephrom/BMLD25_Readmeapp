@@ -47,16 +47,5 @@ System für grössere Gruppen nutzbar machen und aktive Kommunikation ermöglich
 | **Lehrer** | Dokumente Klassen zuweisen • Verwaltung mehrerer Klassen |
 | **Schüler** | Benachrichtigungen für neue Dokumente • Warnungen bei überfälligen Dokumenten |
 
----
-
-## **Optionale Erweiterungen (V4+)**
-
-| Bereich | Mögliche Features |
-|--------|-------------------|
-| Rollen & Rechte | Admin/Superuser, differenzierte Berechtigungen |
-| Compliance | Versionierung, Audit-Trail, Änderungsverfolgung |
-| Kommunikation | Automatische Erinnerungen, Chat/Feedback |
-| Integration | Anbindung an Teams, Moodle, OneDrive |
-| Analytics | Lesezeiten, Abschlussquoten, Quiz-Statistiken |
 
 ---
