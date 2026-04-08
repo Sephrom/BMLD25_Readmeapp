@@ -1,20 +1,62 @@
-# Roadmap
 
 
 
-## Version 1.0
-Dies wird die Grundfunktion der app abdecken, diese soll beinhalten,
-eine unterteilung in: Eine Seite für die Lehrer und eine Für die Schüler
+---
 
-|Lehrer   | Schüler  |
-|---|---|
-|   |   |
+# **📘 Roadmap für die App**
 
+---
 
+## **V1.0 – MVP: Dokumentenverwaltung & Lesebestätigung**
 
+### **Ziel**
+Bereitstellung der Kernfunktionen: Dokumente hochladen, anzeigen, lesen, bestätigen.
 
-## Version 2.0
+### **Funktionsübersicht**
 
+| Rolle | Funktionen |
+|-------|------------|
+| **Lehrer** | Dokumente hochladen • Übersicht aller Dokumente • Ampelsystem (Lesestatus) • Anzeige „wer hat gelesen“ |
+| **Schüler** | Dokumentenarchiv • Lesebestätigung mit Zeitstempel |
 
+---
 
-## Version 3.0
+## **V2.0 – Verständnisprüfung & Personalisierung**
+
+### **Ziel**
+Lernkontrolle integrieren und Schülern mehr Struktur geben.
+
+### **Funktionsübersicht**
+
+| Rolle | Funktionen |
+|-------|------------|
+| **Lehrer** | Quizze zu Dokumenten erstellen • Automatische Auswertung • Ergebnisübersicht |
+| **Schüler** | Dokumente als Favoriten markieren • Favoritenliste im Dashboard |
+
+---
+
+## **V3.0 – Skalierung & Benachrichtigungen**
+
+### **Ziel**
+System für grössere Gruppen nutzbar machen und aktive Kommunikation ermöglichen.
+
+### **Funktionsübersicht**
+
+| Rolle | Funktionen |
+|-------|------------|
+| **Lehrer** | Dokumente Klassen zuweisen • Verwaltung mehrerer Klassen |
+| **Schüler** | Benachrichtigungen für neue Dokumente • Warnungen bei überfälligen Dokumenten |
+
+---
+
+## **Optionale Erweiterungen (V4+)**
+
+| Bereich | Mögliche Features |
+|--------|-------------------|
+| Rollen & Rechte | Admin/Superuser, differenzierte Berechtigungen |
+| Compliance | Versionierung, Audit-Trail, Änderungsverfolgung |
+| Kommunikation | Automatische Erinnerungen, Chat/Feedback |
+| Integration | Anbindung an Teams, Moodle, OneDrive |
+| Analytics | Lesezeiten, Abschlussquoten, Quiz-Statistiken |
+
+---
