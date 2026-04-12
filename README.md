@@ -7,13 +7,13 @@ Diese App richtet sich an Lehrpersonen, die den fortschritt ihrer Studierenden �
 
 ## Diese App wurde von folgenden Personen entwickelt:
 
-- Jasleen      (baljas01@students.zhaw.ch)
-- Luana      (birtolua@students.zhaw.ch)
-- Suter Kaj (suterkaj@students.zhaw.ch)
-- Trüb Larissa (trueblar@students.zhaw.ch)
+- Bal       Jasleen     (baljas01@students.zhaw.ch)
+- Britone   Luana       (birtolua@students.zhaw.ch)
+- Suter     Kaj         (suterkaj@students.zhaw.ch)
+- Trüb      Larissa     (trueblar@students.zhaw.ch)
 
 
 
 Das gerüst für diese App wurde freundlicherweise bereitgestellt durch:
 
-- Samuel Wehrli (wehs@zhaw.ch)
+- Samuel    Wehrli       (wehs@zhaw.ch)

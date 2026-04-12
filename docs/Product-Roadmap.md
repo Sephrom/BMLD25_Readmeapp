@@ -16,7 +16,7 @@ Bereitstellung der Kernfunktionen: Dokumente hochladen, anzeigen, lesen, bestät
 
 | Rolle | Funktionen |
 |-------|------------|
-| **Lehrer** | Dokumente hochladen • Übersicht aller Dokumente • Ampelsystem (Lesestatus) • Anzeige „wer hat gelesen“ |
+| **Lehrer** | Login • Dokumente hochladen • Übersicht aller Dokumente • Ampelsystem (Lesestatus) • Anzeige „wer hat gelesen“ |
 | **Schüler** | Dokumentenarchiv • Lesebestätigung mit Zeitstempel |
 
 ---
