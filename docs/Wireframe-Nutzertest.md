@@ -14,9 +14,9 @@ Wenn Schülerinnen und Lehrpersonen unsere Plattform nutzen, dann können sie di
 | Profil Schüler*In | übersichtlich vorallem dank den Farben, favortien leiste auch sinvoll |
 | Archiv Schüler*In | übersichtlich |
 | PDF & Quiz Schüler*In | verständlich |
-| Klassen übersicht SuperUser*In | gute übersicht, gut das es nur die Lerpersonen sehen und nicht die Schüler*Innen unter einender |
+| Klassen übersicht SuperUser*In | gute übersicht, gut das es nur die Lehrpersonen sehen und nicht die Schüler*Innen unter einender |
 | Upload SuperUser*In | übersichtlich, grau nicht so eine schöne Farbe |
-| Quiz SuperUser*In | übersichtlich, gut das es verschiedene möglichkeiten zur Fragestellung gibt |
+| Quiz SuperUser*In | übersichtlich, gut das es verschiedene Möglichkeiten zur Fragestellung gibt |
 
 
 ## Test-Grid
