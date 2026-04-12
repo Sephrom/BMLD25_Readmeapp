@@ -1,8 +1,10 @@
-Nutzertest mit Wireframe
+# Nutzertest mit Wireframe
 
-Hypothese: Wenn Schülerinnen und Lehrpersonen unsere Plattform nutzen, dann können sie die wichtigsten Funktionen (Navigation, Dokumente lesen, Quiz erstellen und bearbeiten) ohne Hilfe verstehen und effizient anwenden, weil die Benutzeroberfläche übersichtlich und intuitiv gestaltet ist.
+## Hypothese
 
-Protokoll:
+Wenn Schülerinnen und Lehrpersonen unsere Plattform nutzen, dann können sie die wichtigsten Funktionen (Navigation, Dokumente lesen, Quiz erstellen und bearbeiten) ohne Hilfe verstehen und effizient anwenden, weil die Benutzeroberfläche übersichtlich und intuitiv gestaltet ist.
+
+## Protokoll
 
 | Seite/Funktion | Bewertung |
 |----------------|-----------|
@@ -17,11 +19,11 @@ Protokoll:
 | Quiz SuperUser*In | übersichtlich, gut das es verschiedene möglichkeiten zur Fragestellung gibt |
 
 
-Test-Grid
+## Test-Grid
+
 | Was war gut? | Was war schlecht? |
 |---|---|
 | - verschiedenen Frage typen beim erstellen vom Quiz<br>- Ampelsystem zur überprüfung<br>- das es zum Dokumente lesen und Quiz beantworten ist<br>- Testerin würde sie für ihre Klasse benutzen | - eigentlich nichts<br>- man könnte optisch mit Farben noch etwas schöner machen |
-
 | Neue Ideen? | Neue Probleme? |
 |---|---|
 | - ein Ordern machen wo nur Lehrpersonen/Dozenten anschauen können, damit sie die Quiz für weitere Klassen verwenden können. | - keine |
