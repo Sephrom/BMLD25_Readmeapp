@@ -10,8 +10,8 @@ Diese App richtet sich an Lehrpersonen, die den fortschritt ihrer Studierenden √
 
 ## Diese App wurde von folgenden Personen entwickelt:
 
-- Jasleen      ()
-- Luana      ()
+- Jasleen      (baljas01@students.zhaw.ch)
+- Luana      (birtolua@students.zhaw.ch)
 - Suter Kaj (suterkaj@students.zhaw.ch)
 - Tr√ºb Larissa (trueblar@students.zhaw.ch)
 
