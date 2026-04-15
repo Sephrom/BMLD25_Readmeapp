@@ -13,6 +13,9 @@ data_manager = DataManager(       # initialize data manager
 login_manager = LoginManager(data_manager) # handles user login and registration
 login_manager.login_register()             # stops if not logged in
 
+# Lade die Rolle des aktuellen Benutzers aus den Credentials
+user_role = login_manager.auth_credentials['usernames'].get(st.session_state.get('username'), {}).get('role', 'student')
+st.session_state['role'] = user_role
 
 
 if 'data_df' not in st.session_state:
@@ -23,16 +26,23 @@ if 'data_df' not in st.session_state:
     )
 
 
-
-
 st.set_page_config(page_title="Meine App", page_icon=":material/home:")
 
-pg_home = st.Page("views/home.py", title="Home", icon=":material/home:", default=True)
-pg_second = st.Page("views/unterseite_a.py", title="Unterseite A", icon=":material/info:")
+# Navigation basierend auf Rolle
+user_role = st.session_state.get('role', 'student')
 
+if user_role == 'teacher':
+    # Lehrer-Navigation
+    pg_home = st.Page("views/home.py", title="Home", icon=":material/home:", default=True)
+    pg_archive = st.Page("views/archive_teacher.py", title="Archiv", icon=":material/archive:")
+    pg_profile = st.Page("views/profile.py", title="Profil", icon=":material/person:")
+    pages = [pg_home, pg_archive, pg_profile]
+else:
+    # Schüler-Navigation
+    pg_home = st.Page("views/home.py", title="Home", icon=":material/home:", default=True)
+    pg_archive = st.Page("views/archive_student.py", title="Archiv", icon=":material/archive:")
+    pg_profile = st.Page("views/profile.py", title="Profil", icon=":material/person:")
+    pages = [pg_home, pg_archive, pg_profile]
 
-
-
-
-pg = st.navigation([pg_home, pg_second])
+pg = st.navigation(pages)
 pg.run()

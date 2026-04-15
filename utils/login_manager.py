@@ -101,18 +101,32 @@ class LoginManager:
             st.warning("Please enter your username and password")
 
     def _register(self):
-        """
-        Renders the registration form and handles user registration flow.
-
-        Displays password requirements, processes registration attempts,
-        and saves credentials on successful registration.
-        """
         st.info("""
         The password must be 8-20 characters long and include at least one uppercase letter,
         one lowercase letter, one digit, and one special character from @$!%*?&.
-        """)
+        """) 
+
+        
+        # Lehrerzuganscode ZUERST abfragen
+        teacher_code = st.text_input("Lehrerzuganscode (optional)", type="password", help="Nur ausfüllen, wenn Sie ein Lehrer sind")
+        
+        # DANN Registrierung
         res = self.authenticator.register_user()
+        
         if res[1] is not None:
+            # Bestimme die Rolle basierend auf dem Lehrerzugangscode
+            valid_teacher_code = "LEHRER2025"
+            if teacher_code == valid_teacher_code:
+                role = "teacher"
+                st.success("Lehrer-Account erstellt")
+            else:
+                role = "student"
+                st.success("Schüler-Account erstellt")
+        
+            # Speichere die Rolle in den Credentials
+            if res[1] in self.auth_credentials['usernames']:
+                self.auth_credentials['usernames'][res[1]]['role'] = role
+            
             st.success(f"User {res[1]} registered successfully")
             try:
                 self._save_auth_credentials()
