@@ -27,4 +27,4 @@ Wenn Schülerinnen und Lehrpersonen unsere Plattform nutzen, dann können sie di
 
 | Neue Ideen? | Neue Probleme? |
 |---|---|
-| - ein Ordern machen wo nur Lehrpersonen/Dozenten anschauen können, damit sie die Quiz für weitere Klassen verwenden können. | - keine |
+| - ein Ordern machen wo nur Lehrpersonen/Dozenten anschauen können, damit sie die Quiz für weitere Klassen verwenden können. | - keine | 
