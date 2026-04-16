@@ -1,7 +1,7 @@
 # BMLD25_Readmeapp
 
 
-Diese App richtet sich an Lehrpersonen, die den fortschritt ihrer Studierenden überprüfen möchten, ind dem Sie überprüfen können ob die augegebenen dokumente gelesen wurden und bestanden wurden.
+Diese App richtet sich an Lehrpersonen, die den Fortschritt ihrer Studierenden überprüfen möchten, ind dem Sie überprüfen können ob die augegebenen Dokumente gelesen wurden und bestanden wurden.
 
 
 
