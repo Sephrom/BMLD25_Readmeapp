@@ -6,6 +6,8 @@ import streamlit as st
 from utils.data_manager import DataManager
 from utils.login_manager import LoginManager
 
+
+st.set_page_config(page_title="Meine App", page_icon=":material/home:")
 data_manager = DataManager(       # initialize data manager
     fs_protocol='webdav',         # protocol for the filesystem, use webdav for switch drive
     fs_root_folder="BMLD_App_DB"  # folder on switch drive where the data is stored
@@ -26,7 +28,7 @@ if 'data_df' not in st.session_state:
     )
 
 
-st.set_page_config(page_title="Meine App", page_icon=":material/home:")
+
 
 # Navigation basierend auf Rolle
 user_role = st.session_state.get('role', 'student')
