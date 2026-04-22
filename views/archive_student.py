@@ -53,7 +53,7 @@ else:
                 
                 with col2:
                     st.button(f"👁️ Öffnen", 
-                        key=f"open_{selected_folder}_{doc_name}",
+                        key=f"btn_open_{selected_folder}_{doc_name}",
                         on_click=toggle_pdf_view,
                         args=(f"open_{selected_folder}_{doc_name}",)
                     )
