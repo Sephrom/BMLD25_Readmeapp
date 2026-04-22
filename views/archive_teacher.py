@@ -84,7 +84,7 @@ else:
                 with st.expander("📖 Dokument anschauen"):
                     pdf_content = document_manager.get_document(selected_folder_logs, selected_doc)
                     if pdf_content:
-                        st.pdf_viewer(pdf_content)
+                        st.pdf(pdf_content)
                         
                         # Download-Button
                         st.download_button(

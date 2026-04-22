@@ -89,7 +89,7 @@ else:
                     
                     pdf_content = document_manager.get_document(selected_folder, doc_name)
                     if pdf_content:
-                        st.pdf_viewer(pdf_content)
+                        st.pdf(pdf_content)
                         
                         # Download-Button
                         st.download_button(
