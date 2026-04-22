@@ -10,6 +10,10 @@ data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")
 log_manager = LogManager(data_manager)
 document_manager = DocumentManager(data_manager)
 
+# Callback-Funktion für PDF-Anzeige Toggle
+def toggle_pdf_view(key):
+    st.session_state[key] = not st.session_state.get(key, False)
+
 st.info("Hier findest du alle Dokumente, die dein Lehrer hochgeladen hat.")
 
 st.divider()
@@ -48,8 +52,14 @@ else:
                     st.subheader(f"📄 {doc_name}")
                 
                 with col2:
-                    if st.button(f"👁️ Öffnen", key=f"open_{selected_folder}_{doc_name}"):
-                        # Füge hier hinzu:
+                    st.button(f"👁️ Öffnen", 
+                        key=f"open_{selected_folder}_{doc_name}",
+                        on_click=toggle_pdf_view,
+                        args=(f"open_{selected_folder}_{doc_name}",)
+                    )
+                    
+                    # Logging danach
+                    if st.session_state.get(f"open_{selected_folder}_{doc_name}"):
                         student_name = st.session_state.get('name', 'Unbekannt')
                         student_username = st.session_state.get('username', 'Unbekannt')
                         log_manager.mark_document_as_opened(
@@ -57,7 +67,6 @@ else:
                             student_name=student_name,
                             student_username=student_username
                         )
-                        st.session_state[f"open_{selected_folder}_{doc_name}"] = True
                 
                 with col3:
                     if st.button(f"✅ Gelesen", key=f"read_{selected_folder}_{doc_name}"):
