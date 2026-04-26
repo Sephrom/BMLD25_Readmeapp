@@ -7,3 +7,4 @@ fsspec
 matplotlib
 numpy
 pytz
+streamlit[pdf]
