@@ -58,8 +58,11 @@ else:
                         args=(f"open_{selected_folder}_{doc_name}",)
                     )
                     
-                    # Logging danach
-                    if st.session_state.get(f"open_{selected_folder}_{doc_name}"):
+                     # Logging nur einmal beim ersten Öffnen
+                    open_state_key = f"open_{selected_folder}_{doc_name}"
+                    open_logged_key = f"open_logged_{selected_folder}_{doc_name}"
+                    
+                    if st.session_state.get(open_state_key) and not st.session_state.get(open_logged_key):
                         student_name = st.session_state.get('name', 'Unbekannt')
                         student_username = st.session_state.get('username', 'Unbekannt')
                         log_manager.mark_document_as_opened(
@@ -67,6 +70,7 @@ else:
                             student_name=student_name,
                             student_username=student_username
                         )
+                        st.session_state[open_logged_key] = True
                 
                 with col3:
                     if st.button(f"✅ Gelesen", key=f"read_{selected_folder}_{doc_name}"):
