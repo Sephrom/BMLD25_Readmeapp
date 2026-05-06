@@ -108,8 +108,17 @@ class LoginManager:
 
         
         # Lehrerzuganscode ZUERST abfragen
-        teacher_code = st.text_input("Lehrerzuganscode (optional)", type="password", help="Nur ausfüllen, wenn Sie ein Lehrer sind")
-        
+        teacher_code = st.text_input(
+            "Lehrerzuganscode (optional)",
+            type="password",
+            help="Nur ausfüllen, wenn Sie ein Lehrer sind"
+        )
+        user_class = st.text_input(
+            "Klasse",
+            value="",
+            help="z. B. 1A, 2B oder 3C"
+        )
+
         # DANN Registrierung
         res = self.authenticator.register_user()
         
@@ -126,6 +135,7 @@ class LoginManager:
             # Speichere die Rolle in den Credentials
             if res[1] in self.auth_credentials['usernames']:
                 self.auth_credentials['usernames'][res[1]]['role'] = role
+                self.auth_credentials['usernames'][res[1]]['class'] = user_class or None
             
             st.success(f"User {res[1]} registered successfully")
             try:

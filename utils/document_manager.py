@@ -89,7 +89,21 @@ class DocumentManager:
         """Lädt die Quiz-Definition für ein Dokument."""
         quiz_file = f"documents/{document_name}_quiz.json"
         return self.data_manager.load_app_data(quiz_file, initial_value={"questions": []})
+    
+    def load_document_meta(self, folder_name: str, document_name: str) -> dict:
+        """Lädt Metadaten für ein Dokument."""
+        meta_file = f"documents/{folder_name}/{document_name}.meta.json"
+        return self.data_manager.load_app_data(meta_file, initial_value={"due_date": None})
 
+    def save_document_meta(self, folder_name: str, document_name: str, meta_data: dict) -> bool:
+        """Speichert Metadaten für ein Dokument."""
+        meta_file = f"documents/{folder_name}/{document_name}.meta.json"
+        try:
+            self.data_manager.save_app_data(meta_data, meta_file)
+            return True
+        except Exception as e:
+            print(f"Fehler beim Speichern der Dokument-Metadaten: {e}")
+            return False
     def save_quiz(self, document_name: str, quiz_data: dict) -> bool:
         """Speichert die Quiz-Definition für ein Dokument."""
         quiz_file = f"documents/{document_name}_quiz.json"

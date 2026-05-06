@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from utils.data_manager import DataManager
+from datetime import datetime, date
+
 
 class LogManager:
     """Verwaltet Dokument-Logs für Schüler-Aktivitäten (spaltenweise Struktur)"""
@@ -14,6 +16,31 @@ class LogManager:
         """Gibt aktuellen Schweizer Zeitstempel zurück"""
         return datetime.now(ZoneInfo('Europe/Zurich')).strftime("%Y-%m-%d %H:%M:%S")
     
+    @staticmethod
+    def parse_due_date(due_date):
+        if not due_date:
+            return None
+        try:
+            return datetime.fromisoformat(due_date).date()
+        except ValueError:
+            return None
+
+    def get_student_status(self, row, due_date=None):
+        """Berechnet den Ampelstatus für einen Eintrag."""
+        due = self.parse_due_date(due_date)
+        read = pd.notna(row.get('read_timestamp'))
+        passed = pd.notna(row.get('quiz_passed_timestamp'))
+
+        if read and passed:
+            return "🟢 Erledigt"
+        if read:
+            if due and date.today() > due:
+                return "🔴 Überfällig"
+            return "🟡 Gelesen, Quiz offen"
+        if due and date.today() > due:
+            return "🔴 Überfällig"
+        return "🔴 Nicht begonnen"
+
     def _get_or_create_log_df(self, log_file: str) -> pd.DataFrame:
         """Lade Log-Datei oder erstelle neue mit korrekter Struktur"""
         columns = [

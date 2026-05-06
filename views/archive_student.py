@@ -17,17 +17,16 @@ def toggle_pdf_view(key):
 
 st.info("Hier findest du alle Dokumente, die dein Lehrer hochgeladen hat.")
 
+st.markdown("**Status-Legende:**")
+st.write("🟢 Erledigt: Dokument gelesen und Quiz bestanden")
+st.write("🟡 In Arbeit: Dokument gelesen, Quiz noch offen")
+st.write("🔴 Überfällig / Nicht begonnen: Dokument nicht vollständig erledigt")
 st.divider()
 
-# TODO: Später - Klassen-Filter hinzufügen
-# user_class = st.session_state.get('class', None)  # Wird später gespeichert
-# if user_class:
-#     folders = [f for f in document_manager.get_folders() if f.startswith(user_class)]
-# else:
-#     folders = document_manager.get_folders()
+st.divider()
 
-# BASIS: Zeige alle Ordner + Dokumente
-folders = document_manager.get_folders()
+
+
 
 if not folders:
     st.info("Keine Dokumente verfügbar.")
@@ -51,6 +50,18 @@ else:
                 
                 with col1:
                     st.subheader(f"📄 {doc_name}")
+                meta = document_manager.load_document_meta(selected_folder, doc_name)
+                due_date = meta.get("due_date")
+                logs_df = log_manager.get_document_logs(doc_name)
+                student_row = logs_df[(logs_df['student_username'] == st.session_state.get('username'))]
+                status = "🔴 Nicht begonnen"
+                if not student_row.empty:
+                    status = log_manager.get_student_status(student_row.iloc[0], due_date=due_date)
+
+                st.write(f"**Status:** {status}")
+                if due_date:
+                    st.write(f"**Frist:** {due_date}")
+
                 
                 with col2:
                     st.button(f"👁️ Öffnen", 

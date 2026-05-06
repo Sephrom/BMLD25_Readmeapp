@@ -34,10 +34,10 @@ with col1:
                 st.rerun()
             else:
                 st.error("Fehler beim Erstellen des Ordners")
-    else:
-        # Wähle existierenden Ordner
-        selected_folder = st.selectbox("Ordner auswählen", folders if folders else ["Keine Ordner vorhanden"])
-        
+        else:
+        selected_folder = st.selectbox("Klasse / Ordner auswählen", folders if folders else ["Keine Ordner vorhanden"])
+        due_date = st.date_input("Frist setzen", help="Datum, bis wann das Dokument gelesen und das Quiz erledigt sein sollte.")
+
         if selected_folder != "Keine Ordner vorhanden":
             # Upload in den ausgewählten Ordner
             uploaded_file = st.file_uploader("PDF hochladen", type=['pdf'])
@@ -47,6 +47,10 @@ with col1:
                         file_content=uploaded_file.getbuffer(),
                         folder_name=selected_folder,
                         file_name=uploaded_file.name
+                    ) and document_manager.save_document_meta(
+                        selected_folder,
+                        uploaded_file.name,
+                        {"due_date": due_date.strftime("%Y-%m-%d")}
                     ):
                         st.success(f"✓ '{uploaded_file.name}' in '{selected_folder}' hochgeladen!")
                         st.rerun()
@@ -74,6 +78,10 @@ else:
     else:
         selected_doc = st.selectbox("Dokument auswählen", documents_in_folder, key="logs_doc")
         
+meta = document_manager.load_document_meta(selected_folder_logs, selected_doc)
+due_date_text = meta.get("due_date") or "Keine Frist"
+st.markdown(f"**Frist:** {due_date_text}")
+
         if selected_doc:
             st.write(f"**Aktivitäten für: {selected_doc}**")
             
@@ -154,17 +162,22 @@ else:
             if logs_df.empty:
                 st.info("Noch keine Aktivitäten für dieses Dokument.")
             else:
+                st.markdown(f"**Frist:** {due_date_text}")
+
+
                 st.dataframe(
                     logs_df,
                     column_config={
                         "student_name": "Schüler Name",
                         "student_username": "Benutzername",
                         "document_name": "Dokument",
+                        "status": "Status",
                         "opened_timestamp": "Geöffnet am",
                         "read_timestamp": "Gelesen am",
                         "quiz_passed_timestamp": "Quiz bestanden am",
                         "quiz_attempts": "Quiz-Versuche",
                         "last_quiz_score": "Letzte Quiz-Note",
+                        
                     },
                     hide_index=True,
                     use_container_width=True,

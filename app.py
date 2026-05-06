@@ -15,9 +15,13 @@ data_manager = DataManager(       # initialize data manager
 login_manager = LoginManager(data_manager) # handles user login and registration
 login_manager.login_register()             # stops if not logged in
 
-# Lade die Rolle des aktuellen Benutzers aus den Credentials
-user_role = login_manager.auth_credentials['usernames'].get(st.session_state.get('username'), {}).get('role', 'student')
+# Lade die Rolle und Klasse des aktuellen Benutzers aus den Credentials
+user_info = login_manager.auth_credentials['usernames'].get(st.session_state.get('username'), {})
+user_role = user_info.get('role', 'student')
+user_class = user_info.get('class', None)
+
 st.session_state['role'] = user_role
+st.session_state['class'] = user_class
 
 
 if 'data_df' not in st.session_state:
