@@ -42,6 +42,7 @@ if user_role == 'teacher':
     pg_home = st.Page("views/home.py", title="Home", icon=":material/home:", default=True)
     pg_archive = st.Page("views/archive_teacher.py", title="Archiv", icon=":material/archive:")
     pg_classes = st.Page("views/class_assignment.py", title="Klassen", icon=":material/people:")
+    pg_profile = st.Page("views/profile.py", title="Profil", icon=":material/person:")
     pages = [pg_home, pg_archive, pg_classes, pg_profile]
 else:
     # Schüler-Navigation

@@ -23,9 +23,11 @@ st.write("🟡 In Arbeit: Dokument gelesen, Quiz noch offen")
 st.write("🔴 Überfällig / Nicht begonnen: Dokument nicht vollständig erledigt")
 st.divider()
 
-st.divider()
-
-
+user_class = st.session_state.get('class', None)
+if user_class:
+    folders = [f for f in document_manager.get_folders() if f == user_class]
+else:
+    folders = document_manager.get_folders()
 
 
 if not folders:

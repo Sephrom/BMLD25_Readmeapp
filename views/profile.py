@@ -40,7 +40,7 @@ with col2:
 
 st.divider()
 
-st.info("Weitere Profileinstellungen kommen bald...")
+
 user_class = st.session_state.get('class', None)
 
 if not user_class:
