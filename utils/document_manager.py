@@ -131,5 +131,33 @@ class DocumentManager:
         except Exception as e:
             print(f"Fehler beim Löschen der Datei: {e}")
             return False
+    def load_class_assignments(self, folder_name: str, document_name: str) -> dict:
+        """Lädt die Klassenzuordnungen für ein Dokument."""
+        classes_file = f"documents/{folder_name}/{document_name}.classes.json"
+        return self.data_manager.load_app_data(classes_file, initial_value={"assigned_classes": []})
+
+    def save_class_assignments(self, folder_name: str, document_name: str, classes_list: list) -> bool:
+        """Speichert die Klassenzuordnungen für ein Dokument."""
+        classes_file = f"documents/{folder_name}/{document_name}.classes.json"
+        try:
+            self.data_manager.save_app_data({"assigned_classes": classes_list}, classes_file)
+            return True
+        except Exception as e:
+            print(f"Fehler beim Speichern der Klassenzuordnungen: {e}")
+            return False
+
+    def get_all_classes_from_students(self) -> list:
+        """Gibt alle Klassen zurück, die von Schülern verwendet werden."""
+        try:
+            creds = self.data_manager.load_app_data('credentials.yaml', initial_value={"usernames": {}})
+            classes = set()
+            for user_data in creds.get("usernames", {}).values():
+                user_class = user_data.get("class")
+                if user_class:
+                    classes.add(user_class)
+            return sorted(list(classes))
+        except Exception as e:
+            print(f"Fehler beim Lesen der Klassen: {e}")
+            return []
 
 

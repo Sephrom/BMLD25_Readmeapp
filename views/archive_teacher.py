@@ -154,6 +154,29 @@ else:
                         st.success("Quiz gespeichert.")
                     else:
                         st.error("Fehler beim Speichern des Quiz.")  
+                   with st.expander("🎯 Klassen zuweisen"):
+                available_classes = document_manager.get_all_classes_from_students()
+                
+                # Lade aktuelle Zuordnungen
+                current_assignments = document_manager.load_class_assignments(selected_folder_logs, selected_doc)
+                assigned_classes = current_assignments.get("assigned_classes", [])
+                
+                st.write(f"**Aktuell zugewiesen:** {', '.join(assigned_classes) if assigned_classes else 'Keine'}")
+                
+                # Multi-Select für Klassen
+                selected_classes = st.multiselect(
+                    "Wähle Klassen zum Zuweisen",
+                    available_classes,
+                    default=assigned_classes,
+                    key=f"class_assign_{selected_doc}"
+                )
+                
+                if st.button("Klassenzuordnung speichern", key=f"save_class_assign_{selected_doc}"):
+                    if document_manager.save_class_assignments(selected_folder_logs, selected_doc, selected_classes):
+                        st.success(f"✓ Dokument wurde den Klassen zugewiesen: {', '.join(selected_classes) if selected_classes else 'keine'}")
+                        st.rerun()
+                    else:
+                        st.error("Fehler beim Speichern der Klassenzuordnung")
 
             # Zeige Logs
             st.write("**Schüler, die dieses Dokument gelesen haben:**")
