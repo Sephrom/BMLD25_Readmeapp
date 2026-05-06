@@ -91,10 +91,14 @@ else:
                 quiz_def = document_manager.load_quiz(doc_name)
                 if quiz_def.get("questions"):
                     if st.button("📝 Quiz starten", key=f"start_quiz_{selected_folder}_{doc_name}"):
-                        questions = quiz_def["questions"].copy()
+                        questions = [q.copy() for q in quiz_def["questions"]]
                         random.shuffle(questions)
                         for q in questions:
-                            q["options"] = random.sample(q["options"], len(q["options"]))
+                            correct_answer = q["options"][q["correct_index"]]
+                            shuffled_options = random.sample(q["options"], len(q["options"]))
+                            q["correct_index"] = shuffled_options.index(correct_answer)
+                            q["options"] = shuffled_options
+
                         st.session_state[f"quiz_{selected_folder}_{doc_name}_questions"] = questions
                         st.session_state[f"quiz_{selected_folder}_{doc_name}_current"] = 0
                         st.session_state[f"quiz_{selected_folder}_{doc_name}_answers"] = [None] * len(questions)

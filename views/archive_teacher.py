@@ -109,8 +109,8 @@ else:
                 quiz_def = document_manager.load_quiz(selected_doc)
                 questions = quiz_def.get("questions", [])
 
-                if len(questions) < 3:
-                    for _ in range(3 - len(questions)):
+                if len(questions) < 10:
+                    for _ in range(10 - len(questions)):
                         questions.append({
                             "question": "",
                             "options": ["", "", "", ""],
