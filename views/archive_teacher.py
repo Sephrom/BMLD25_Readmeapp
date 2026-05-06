@@ -34,7 +34,7 @@ with col1:
                 st.rerun()
             else:
                 st.error("Fehler beim Erstellen des Ordners")
-        else:
+    else:
         selected_folder = st.selectbox("Klasse / Ordner auswählen", folders if folders else ["Keine Ordner vorhanden"])
         due_date = st.date_input("Frist setzen", help="Datum, bis wann das Dokument gelesen und das Quiz erledigt sein sollte.")
 
@@ -78,11 +78,12 @@ else:
     else:
         selected_doc = st.selectbox("Dokument auswählen", documents_in_folder, key="logs_doc")
         
-meta = document_manager.load_document_meta(selected_folder_logs, selected_doc)
-due_date_text = meta.get("due_date") or "Keine Frist"
-st.markdown(f"**Frist:** {due_date_text}")
-
+                
         if selected_doc:
+            meta = document_manager.load_document_meta(selected_folder_logs, selected_doc)
+            due_date_text = meta.get("due_date") or "Keine Frist"
+            st.markdown(f"**Frist:** {due_date_text}")
+            
             st.write(f"**Aktivitäten für: {selected_doc}**")
             
             # Buttons nebeneinander
@@ -162,8 +163,11 @@ st.markdown(f"**Frist:** {due_date_text}")
             if logs_df.empty:
                 st.info("Noch keine Aktivitäten für dieses Dokument.")
             else:
-                st.markdown(f"**Frist:** {due_date_text}")
-
+                if not logs_df.empty:
+                    logs_df['status'] = logs_df.apply(
+                        lambda row: log_manager.get_student_status(row, due_date=meta.get("due_date")),
+                        axis=1
+                    )
 
                 st.dataframe(
                     logs_df,
