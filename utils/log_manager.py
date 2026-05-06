@@ -29,16 +29,59 @@ class LogManager:
                 log_file,
                 initial_value=pd.DataFrame(columns=columns)
             )
+                      # Migriere alte Struktur zur neuen
+            if 'action' in log_df.columns:
+                # Alte Struktur erkannt - in neue umwandeln
+                unique_combos = log_df[['student_name', 'student_username', 'document_name']].drop_duplicates()
+                new_rows = []
+                
+                for _, combo in unique_combos.iterrows():
+                    mask = (
+                        (log_df['student_username'] == combo['student_username']) &
+                        (log_df['document_name'] == combo['document_name'])
+                    )
+                    old_entries = log_df[mask]
+                    
+                    # Extrahiere Zeitstempel pro Aktion
+                    opened_ts = None
+                    read_ts = None
+                    
+                    if any(old_entries['action'] == 'open'):
+                        opened_ts = old_entries[old_entries['action'] == 'open']['timestamp'].iloc[0]
+                    if any(old_entries['action'] == 'read'):
+                        read_ts = old_entries[old_entries['action'] == 'read']['timestamp'].iloc[0]
+                    
+                    new_row = {
+                        'student_name': combo['student_name'],
+                        'student_username': combo['student_username'],
+                        'document_name': combo['document_name'],
+                        'opened_timestamp': opened_ts,
+                        'read_timestamp': read_ts,
+                        'quiz_passed_timestamp': None
+                    }
+                    new_rows.append(new_row)
+                
+                new_df = pd.DataFrame(new_rows)
+                self.data_manager.save_app_data(new_df, log_file)
+                return new_df
+            
+            # Fehlerhafte Spalten ergänzen
+            for col in columns:
+                if col not in log_df.columns:
+                    log_df[col] = None
+            
+            return log_df
         except:
             log_df = pd.DataFrame(columns=columns)
         
         return log_df
     
     def _get_or_create_row(self, log_df: pd.DataFrame, document_name: str, 
-                          student_name: str, student_username: str) -> int:
+                          student_name: str, student_username: str) -> tuple:
         """
         Sucht nach existierendem Eintrag für Schüler+Dokument.
         Falls nicht vorhanden: neu hinzufügen und Index zurückgeben.
+        Gibt zurück: (log_df, row_index)
         """
         mask = (
             (log_df['student_username'] == student_username) &
@@ -46,7 +89,7 @@ class LogManager:
         )
         
         if mask.any():
-            return log_df[mask].index[0]
+            return log_df, log_df[mask].index[0]
         else:
             # Neue Zeile hinzufügen
             new_row = {
@@ -59,14 +102,14 @@ class LogManager:
             }
             new_df = pd.DataFrame([new_row])
             log_df = pd.concat([log_df, new_df], ignore_index=True)
-            return len(log_df) - 1
+            return log_df, len(log_df) - 1
     
     def mark_document_as_opened(self, document_name: str, student_name: str, student_username: str):
         """Setzt opened_timestamp wenn noch nicht gesetzt"""
         log_file = f"documents/{document_name}_log.csv"
         
         log_df = self._get_or_create_log_df(log_file)
-        row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
+        log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
         
         # Nur setzen wenn noch nicht vorhanden
         if pd.isna(log_df.loc[row_idx, 'opened_timestamp']):
@@ -78,7 +121,7 @@ class LogManager:
         log_file = f"documents/{document_name}_log.csv"
         
         log_df = self._get_or_create_log_df(log_file)
-        row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
+        log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
         
         # Nur setzen wenn noch nicht vorhanden
         if pd.isna(log_df.loc[row_idx, 'read_timestamp']):
@@ -90,7 +133,7 @@ class LogManager:
         log_file = f"documents/{document_name}_log.csv"
         
         log_df = self._get_or_create_log_df(log_file)
-        row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
+        log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
         
         # Nur setzen wenn noch nicht vorhanden
         if pd.isna(log_df.loc[row_idx, 'quiz_passed_timestamp']):
