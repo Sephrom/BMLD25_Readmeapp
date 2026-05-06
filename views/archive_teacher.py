@@ -117,11 +117,12 @@ else:
                 st.dataframe(
                     logs_df,
                     column_config={
-                        "timestamp": "Zeitstempel",
                         "student_name": "Schüler Name",
                         "student_username": "Benutzername",
                         "document_name": "Dokument",
-                        "action": "Aktion",
+                        "opened_timestamp": "Geöffnet am",
+                        "read_timestamp": "Gelesen am",
+                        "quiz_passed_timestamp": "Quiz bestanden am",
                     },
                     hide_index=True,
                     use_container_width=True,

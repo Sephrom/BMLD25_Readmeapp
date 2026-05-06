@@ -58,7 +58,7 @@ else:
                         args=(f"open_{selected_folder}_{doc_name}",)
                     )
                     
-                     # Logging nur einmal beim ersten Öffnen
+                    # Logging nur einmal beim ersten Öffnen
                     open_state_key = f"open_{selected_folder}_{doc_name}"
                     open_logged_key = f"open_logged_{selected_folder}_{doc_name}"
                     
