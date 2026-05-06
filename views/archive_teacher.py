@@ -105,7 +105,47 @@ else:
                     else:
                         st.error("Fehler beim Löschen")
            
-                     
+            with st.expander("✏️ Quiz bearbeiten"):
+                quiz_def = document_manager.load_quiz(selected_doc)
+                questions = quiz_def.get("questions", [])
+
+                if len(questions) < 3:
+                    for _ in range(3 - len(questions)):
+                        questions.append({
+                            "question": "",
+                            "options": ["", "", "", ""],
+                            "correct_index": 0
+                        })
+
+                for i, q in enumerate(questions):
+                    st.markdown(f"### Frage {i + 1}")
+                    q["question"] = st.text_input(
+                        f"Frage {i + 1}",
+                        value=q.get("question", ""),
+                        key=f"quiz_question_{selected_doc}_{i}"
+                    )
+                    opts = q.get("options", ["", "", "", ""])
+                    for j in range(4):
+                        opts[j] = st.text_input(
+                            f"Antwort {chr(65 + j)}",
+                            value=opts[j],
+                            key=f"quiz_option_{selected_doc}_{i}_{j}"
+                        )
+                    q["options"] = opts
+                    q["correct_index"] = st.selectbox(
+                        "Richtige Antwort",
+                        options=list(range(4)),
+                        index=q.get("correct_index", 0),
+                        format_func=lambda x, opts=opts: opts[x],
+                        key=f"quiz_correct_{selected_doc}_{i}"
+                    )
+
+                if st.button("Quiz speichern", key=f"save_quiz_{selected_doc}"):
+                    if document_manager.save_quiz(selected_doc, {"questions": questions}):
+                        st.success("Quiz gespeichert.")
+                    else:
+                        st.error("Fehler beim Speichern des Quiz.")  
+
             # Zeige Logs
             st.write("**Schüler, die dieses Dokument gelesen haben:**")
             
@@ -123,6 +163,8 @@ else:
                         "opened_timestamp": "Geöffnet am",
                         "read_timestamp": "Gelesen am",
                         "quiz_passed_timestamp": "Quiz bestanden am",
+                        "quiz_attempts": "Quiz-Versuche",
+                        "last_quiz_score": "Letzte Quiz-Note",
                     },
                     hide_index=True,
                     use_container_width=True,

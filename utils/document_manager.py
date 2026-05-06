@@ -85,6 +85,26 @@ class DocumentManager:
             print(f"Fehler beim Laden der Datei: {e}")
             return None
     
+    def load_quiz(self, document_name: str) -> dict:
+        """Lädt die Quiz-Definition für ein Dokument."""
+        quiz_file = f"documents/{document_name}_quiz.json"
+        return self.data_manager.load_app_data(quiz_file, initial_value={"questions": []})
+
+    def save_quiz(self, document_name: str, quiz_data: dict) -> bool:
+        """Speichert die Quiz-Definition für ein Dokument."""
+        quiz_file = f"documents/{document_name}_quiz.json"
+        try:
+            self.data_manager.save_app_data(quiz_data, quiz_file)
+            return True
+        except Exception as e:
+            print(f"Fehler beim Speichern des Quiz: {e}")
+            return False
+
+    def quiz_exists(self, document_name: str) -> bool:
+        """Prüft, ob für ein Dokument ein Quiz existiert."""
+        quiz_file = f"documents/{document_name}_quiz.json"
+        return self.data_manager.fs.exists(f"{self.data_manager.fs_root_folder}/{quiz_file}")
+
     def delete_document(self, folder_name: str, file_name: str) -> bool:
         """Löscht eine PDF-Datei von der Switch Drive"""
         try:

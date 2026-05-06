@@ -2,6 +2,7 @@ import streamlit as st
 from utils.data_manager import DataManager
 from utils.log_manager import LogManager
 from utils.document_manager import DocumentManager
+import random
 
 st.title("📚 Archiv - Meine Dokumente")
 
@@ -44,7 +45,7 @@ else:
         if not documents:
             st.info(f"Keine Dokumente in '{selected_folder}'.")
         else:
-            # Zeige Dokumente mit "Öffnen"-Button
+                        # Zeige Dokumente mit "Öffnen"-Button
             for doc_name in documents:
                 col1, col2, col3 = st.columns([2, 1, 1])
                 
@@ -86,6 +87,18 @@ else:
                         
                         st.success(f"✓ '{doc_name}' als gelesen markiert!")
                 
+                # Quiz-Button hinzufügen
+                quiz_def = document_manager.load_quiz(doc_name)
+                if quiz_def.get("questions"):
+                    if st.button("📝 Quiz starten", key=f"start_quiz_{selected_folder}_{doc_name}"):
+                        questions = quiz_def["questions"].copy()
+                        random.shuffle(questions)
+                        for q in questions:
+                            q["options"] = random.sample(q["options"], len(q["options"]))
+                        st.session_state[f"quiz_{selected_folder}_{doc_name}_questions"] = questions
+                        st.session_state[f"quiz_{selected_folder}_{doc_name}_current"] = 0
+                        st.session_state[f"quiz_{selected_folder}_{doc_name}_answers"] = [None] * len(questions)
+                
                 # Wenn "Öffnen" geklickt wurde - PDF anzeigen
                 if st.session_state.get(f"open_{selected_folder}_{doc_name}"):
                     st.divider()
@@ -107,3 +120,58 @@ else:
                         st.error("PDF konnte nicht geladen werden.")
                     
                     st.divider()
+                
+                # Quiz-Fenster
+                quiz_key = f"quiz_{selected_folder}_{doc_name}"
+                if st.session_state.get(f"{quiz_key}_questions"):
+                    questions = st.session_state[f"{quiz_key}_questions"]
+                    current = st.session_state[f"{quiz_key}_current"]
+                    answers = st.session_state[f"{quiz_key}_answers"]
+
+                    q = questions[current]
+                    st.markdown(f"### Frage {current + 1} / {len(questions)}")
+                    st.write(q["question"])
+
+                    selected_index = st.radio(
+                        "Antwort wählen",
+                        options=list(range(len(q["options"]))),
+                        format_func=lambda i: q["options"][i],
+                        index=answers[current] if answers[current] is not None else 0,
+                        key=f"{quiz_key}_answer_{current}"
+                    )
+                    answers[current] = selected_index
+                    st.session_state[f"{quiz_key}_answers"] = answers
+
+                    col_back, col_next = st.columns(2)
+                    with col_back:
+                        if st.button("Zurück", key=f"{quiz_key}_prev_{doc_name}") and current > 0:
+                            st.session_state[f"{quiz_key}_current"] = current - 1
+                            st.experimental_rerun()
+                    with col_next:
+                        if st.button("Weiter", key=f"{quiz_key}_next_{doc_name}") and current < len(questions) - 1:
+                            st.session_state[f"{quiz_key}_current"] = current + 1
+                            st.experimental_rerun()
+
+                    if current == len(questions) - 1:
+                        if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
+                            correct = 0
+                            for idx, question in enumerate(questions):
+                                if answers[idx] == question["correct_index"]:
+                                    correct += 1
+                            score = correct / len(questions)
+                            passed = score >= 0.8
+
+                            student_name = st.session_state.get('name', 'Unbekannt')
+                            student_username = st.session_state.get('username', 'Unbekannt')
+                            log_manager.record_quiz_attempt(
+                                document_name=doc_name,
+                                student_name=student_name,
+                                student_username=student_username,
+                                score=score,
+                                passed=passed
+                            )
+
+                            st.success(f"Du hast {int(score * 100)}% erreicht. {'Bestanden' if passed else 'Nicht bestanden'}")
+                            del st.session_state[f"{quiz_key}_questions"]
+                            del st.session_state[f"{quiz_key}_current"]
+                            del st.session_state[f"{quiz_key}_answers"]

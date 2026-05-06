@@ -22,14 +22,17 @@ class LogManager:
             'document_name',
             'opened_timestamp',
             'read_timestamp',
-            'quiz_passed_timestamp'
+            'quiz_passed_timestamp',
+            'quiz_attempts',
+            'last_quiz_score'
         ]
         try:
             log_df = self.data_manager.load_app_data(
                 log_file,
                 initial_value=pd.DataFrame(columns=columns)
             )
-                      # Migriere alte Struktur zur neuen
+            
+            # Migriere alte Struktur zur neuen
             if 'action' in log_df.columns:
                 # Alte Struktur erkannt - in neue umwandeln
                 unique_combos = log_df[['student_name', 'student_username', 'document_name']].drop_duplicates()
@@ -57,7 +60,9 @@ class LogManager:
                         'document_name': combo['document_name'],
                         'opened_timestamp': opened_ts,
                         'read_timestamp': read_ts,
-                        'quiz_passed_timestamp': None
+                        'quiz_passed_timestamp': None,
+                        'quiz_attempts': 0,
+                        'last_quiz_score': None
                     }
                     new_rows.append(new_row)
                 
@@ -98,7 +103,9 @@ class LogManager:
                 'document_name': document_name,
                 'opened_timestamp': None,
                 'read_timestamp': None,
-                'quiz_passed_timestamp': None
+                'quiz_passed_timestamp': None,
+                'quiz_attempts': 0,
+                'last_quiz_score': None
             }
             new_df = pd.DataFrame([new_row])
             log_df = pd.concat([log_df, new_df], ignore_index=True)
@@ -128,17 +135,23 @@ class LogManager:
             log_df.loc[row_idx, 'read_timestamp'] = self.get_ch_timestamp()
             self.data_manager.save_app_data(log_df, log_file)
     
-    def mark_quiz_as_passed(self, document_name: str, student_name: str, student_username: str):
-        """Setzt quiz_passed_timestamp wenn noch nicht gesetzt"""
+    def record_quiz_attempt(self, document_name: str, student_name: str, student_username: str,
+                            score: float, passed: bool):
+        """Speichert einen Quizversuch und setzt bei Bestehen den Zeitstempel."""
         log_file = f"documents/{document_name}_log.csv"
-        
         log_df = self._get_or_create_log_df(log_file)
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
-        
-        # Nur setzen wenn noch nicht vorhanden
-        if pd.isna(log_df.loc[row_idx, 'quiz_passed_timestamp']):
+
+        attempts = log_df.loc[row_idx, 'quiz_attempts']
+        if pd.isna(attempts):
+            attempts = 0
+        log_df.loc[row_idx, 'quiz_attempts'] = int(attempts) + 1
+        log_df.loc[row_idx, 'last_quiz_score'] = score
+
+        if passed and pd.isna(log_df.loc[row_idx, 'quiz_passed_timestamp']):
             log_df.loc[row_idx, 'quiz_passed_timestamp'] = self.get_ch_timestamp()
-            self.data_manager.save_app_data(log_df, log_file)
+
+        self.data_manager.save_app_data(log_df, log_file)
     
     def get_document_logs(self, document_name: str) -> pd.DataFrame:
         """Gibt Log eines Dokuments zurück"""
