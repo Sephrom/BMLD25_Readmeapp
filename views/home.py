@@ -1,8 +1,8 @@
 import streamlit as st
 
-st.title("ReadMe, {benutzername}!")
+st.title("ReadMe")
 
-st.subheader("Willkommen!")
+st.subheader("Willkommen, {usernames}!")
 # Hier würde der Benutzername vom Profil eingefügt werden
 # st.write(f"Willkommen, {benutzername}!")
 
