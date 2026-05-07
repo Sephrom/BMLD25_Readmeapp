@@ -121,7 +121,7 @@ class LogManager:
         )
         
         if mask.any():
-            return log_df, log_df[mask].index[0]
+            return log_df, int(log_df[mask].index[0])
         else:
             # Neue Zeile hinzufügen
             new_row = {
@@ -137,7 +137,7 @@ class LogManager:
             new_df = pd.DataFrame([new_row])
             log_df = pd.concat([log_df, new_df], ignore_index=True)
             return log_df, len(log_df) - 1
-    
+
     def mark_document_as_opened(self, document_name: str, student_name: str, student_username: str):
         """Setzt opened_timestamp wenn noch nicht gesetzt"""
         log_file = f"documents/{document_name}_log.csv"
@@ -146,8 +146,9 @@ class LogManager:
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
         
         # Nur setzen wenn noch nicht vorhanden
-        if pd.isna(log_df.loc[row_idx, 'opened_timestamp']):
-            log_df.loc[row_idx, 'opened_timestamp'] = self.get_ch_timestamp()
+        row_idx = int(row_idx)
+        if pd.isna(log_df.at[row_idx, 'opened_timestamp']):
+            log_df.at[row_idx, 'opened_timestamp'] = self.get_ch_timestamp()
             self.data_manager.save_app_data(log_df, log_file)
     
     def mark_document_as_read(self, document_name: str, student_name: str, student_username: str):
@@ -158,8 +159,9 @@ class LogManager:
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
         
         # Nur setzen wenn noch nicht vorhanden
-        if pd.isna(log_df.loc[row_idx, 'read_timestamp']):
-            log_df.loc[row_idx, 'read_timestamp'] = self.get_ch_timestamp()
+        row_idx = int(row_idx)
+        if pd.isna(log_df.at[row_idx, 'read_timestamp']):
+            log_df.at[row_idx, 'read_timestamp'] = self.get_ch_timestamp()
             self.data_manager.save_app_data(log_df, log_file)
     
     def record_quiz_attempt(self, document_name: str, student_name: str, student_username: str,
@@ -169,14 +171,16 @@ class LogManager:
         log_df = self._get_or_create_log_df(log_file)
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
 
-        attempts = log_df.loc[row_idx, 'quiz_attempts']
+        row_idx = int(row_idx)
+
+        attempts = log_df.at[row_idx, 'quiz_attempts']
         if pd.isna(attempts):
             attempts = 0
-        log_df.loc[row_idx, 'quiz_attempts'] = int(attempts) + 1
-        log_df.loc[row_idx, 'last_quiz_score'] = score
+        log_df.at[row_idx, 'quiz_attempts'] = int(attempts) + 1
+        log_df.at[row_idx, 'last_quiz_score'] = score
 
-        if passed and pd.isna(log_df.loc[row_idx, 'quiz_passed_timestamp']):
-            log_df.loc[row_idx, 'quiz_passed_timestamp'] = self.get_ch_timestamp()
+        if passed and pd.isna(log_df.at[row_idx, 'quiz_passed_timestamp']):
+            log_df.at[row_idx, 'quiz_passed_timestamp'] = self.get_ch_timestamp()
 
         self.data_manager.save_app_data(log_df, log_file)
     
