@@ -97,12 +97,27 @@ class LogManager:
                 self.data_manager.save_app_data(new_df, log_file)
                 return new_df
             
+
             # Fehlerhafte Spalten ergänzen
             for col in columns:
                 if col not in log_df.columns:
                     log_df[col] = None
             
+            # Konvertiere zu korrekten Datentypen
+            log_df = log_df.astype({
+                'student_name': 'object',
+                'student_username': 'object',
+                'document_name': 'object',
+                'opened_timestamp': 'object',
+                'read_timestamp': 'object',
+                'quiz_passed_timestamp': 'object',
+                'quiz_attempts': 'int64',
+                'last_quiz_score': 'float64'
+            }, errors='ignore')
+            
             return log_df
+
+
         except:
             log_df = pd.DataFrame(columns=columns)
         
