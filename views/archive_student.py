@@ -126,8 +126,8 @@ else:
                         for q in questions:
                             correct_answer = q["options"][q["correct_index"]]
                             shuffled_options = random.sample(q["options"], len(q["options"]))
-                            q["correct_index"] = shuffled_options.index(correct_answer)
                             q["options"] = shuffled_options
+                            q["correct_answer"] = correct_answer
 
                         st.session_state[f"quiz_{selected_folder}_{doc_name}_questions"] = questions
                         st.session_state[f"quiz_{selected_folder}_{doc_name}_current"] = 0
@@ -189,7 +189,10 @@ else:
                         if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
                             correct = 0
                             for idx, question in enumerate(questions):
-                                if answers[idx] == question["correct_index"]:
+                                selected = answers[idx]
+                                if selected is None:
+                                    continue
+                                if question["options"][selected] == question["correct_answer"]:
                                     correct += 1
                             score = correct / len(questions)
                             passed = score >= 0.8
