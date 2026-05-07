@@ -20,9 +20,10 @@ students = []
 
 for username, user_data in creds.get("usernames", {}).items():
     if user_data.get("role") == "student":
+        display_name = user_data.get("name") or user_data.get("username") or username
         students.append({
             "Benutzername": username,
-            "Name": user_data.get("name", "Unbekannt"),
+            "Name": display_name,
             "Klasse": user_data.get("class") or "Keine Klasse",
             "Email": user_data.get("email", "")
         })

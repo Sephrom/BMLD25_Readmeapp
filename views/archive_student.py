@@ -26,10 +26,21 @@ st.write("🔴 Überfällig / Nicht begonnen: Dokument nicht vollständig erledi
 st.divider()
 
 user_class = st.session_state.get('class', None)
-if user_class:
-    folders = [f for f in document_manager.get_folders() if f == user_class]
-else:
-    folders = document_manager.get_folders()
+
+def is_assigned_to_user_class(folder_name, doc_name, user_class):
+    if not user_class:
+        return False
+    if folder_name == user_class:
+        return True
+    assigned = document_manager.load_class_assignments(folder_name, doc_name).get("assigned_classes", [])
+    return user_class in assigned
+
+folders = []
+for folder in document_manager.get_folders():
+    for doc_name in document_manager.get_documents_in_folder(folder):
+        if is_assigned_to_user_class(folder, doc_name, user_class):
+            folders.append(folder)
+            break
 
 
 if not folders:

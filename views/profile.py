@@ -46,11 +46,17 @@ user_class = st.session_state.get('class', None)
 if not user_class:
     st.info("Du bist keiner Klasse zugeordnet.")
 else:
-    folders = [user_class] if user_class in document_manager.get_folders() else []
+    folders = document_manager.get_folders()
     status_rows = []
 
     for folder in folders:
         for doc_name in document_manager.get_documents_in_folder(folder):
+            assigned = (
+                folder == user_class
+                or user_class in document_manager.load_class_assignments(folder, doc_name).get("assigned_classes", [])
+            )
+            if not assigned:
+                continue
             meta = document_manager.load_document_meta(folder, doc_name)
             due_date = meta.get("due_date")
             logs_df = log_manager.get_document_logs(doc_name)
