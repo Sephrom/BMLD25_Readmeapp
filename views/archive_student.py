@@ -54,7 +54,11 @@ else:
         st.subheader(f"Dokumente in: {selected_folder}")
         
         # Lade Dokumente des Ordners
-        documents = document_manager.get_documents_in_folder(selected_folder)
+        documents = [
+         doc_name
+        for doc_name in document_manager.get_documents_in_folder(selected_folder)
+        if is_assigned_to_user_class(selected_folder, doc_name, user_class)
+]
         
         if not documents:
             st.info(f"Keine Dokumente in '{selected_folder}'.")
@@ -176,11 +180,10 @@ else:
                     with col_back:
                         if st.button("Zurück", key=f"{quiz_key}_prev_{doc_name}") and current > 0:
                             st.session_state[f"{quiz_key}_current"] = current - 1
-                            st.experimental_rerun()
+
                     with col_next:
                         if st.button("Weiter", key=f"{quiz_key}_next_{doc_name}") and current < len(questions) - 1:
                             st.session_state[f"{quiz_key}_current"] = current + 1
-                            st.experimental_rerun()
 
                     if current == len(questions) - 1:
                         if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
