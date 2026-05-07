@@ -161,65 +161,52 @@ else:
 
                     st.divider()
                 
-                # Quiz-Fenster
+                                # Quiz-Fenster
                 quiz_key = f"quiz_{selected_folder}_{doc_name}"
                 if st.session_state.get(f"{quiz_key}_questions"):
                     questions = st.session_state[f"{quiz_key}_questions"]
-                    current = st.session_state[f"{quiz_key}_current"]
                     answers = st.session_state[f"{quiz_key}_answers"]
 
-                    q = questions[current]
-                    st.markdown(f"### Frage {current + 1} / {len(questions)}")
-                    st.write(q["question"])
+                    for idx, q in enumerate(questions):
+                        st.markdown(f"### Frage {idx + 1} / {len(questions)}")
+                        st.write(q["question"])
 
-                    option_labels = ["A", "B", "C", "D"]
-                    selected_index = answers[current]
+                        cols = st.columns(len(q["options"]))
+                        for opt_idx, option in enumerate(q["options"]):
+                            label = f"{chr(65 + opt_idx)}) {option}"
+                            if cols[opt_idx].button(label, key=f"{quiz_key}_{idx}_option_{opt_idx}"):
+                                answers[idx] = opt_idx
+                                st.session_state[f"{quiz_key}_answers"] = answers
 
-                    cols = st.columns(len(q["options"]))
-                    for idx, option in enumerate(q["options"]):
-                        label = option_labels[idx] if idx < len(option_labels) else str(idx + 1)
-                        button_label = f"{label}) {option}"
-                        if cols[idx].button(button_label, key=f"{quiz_key}_{current}_option_{idx}"):
-                            selected_index = idx
-                            answers[current] = idx
-                            st.session_state[f"{quiz_key}_answers"] = answers
+                        if answers[idx] is not None:
+                            chosen_label = chr(65 + answers[idx])
+                            st.markdown(f"**Ausgewählt:** {chosen_label}) {q['options'][answers[idx]]}")
 
-                    if selected_index is not None:
-                        chosen_label = option_labels[selected_index] if selected_index < len(option_labels) else str(selected_index + 1)
-                        st.markdown(f"**Ausgewählt:** {chosen_label}) {q['options'][selected_index]}")
+                        st.divider()
 
-                    col_back, col_next = st.columns(2)
-                    with col_back:
-                        if st.button("Zurück", key=f"{quiz_key}_prev_{doc_name}") and current > 0:
-                            st.session_state[f"{quiz_key}_current"] = current - 1
+                    if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
+                        correct = 0
+                        for idx, question in enumerate(questions):
+                            selected = answers[idx]
+                            if selected is None:
+                                continue
+                            if question["options"][selected] == question["correct_answer"]:
+                                correct += 1
 
-                    with col_next:
-                        if st.button("Weiter", key=f"{quiz_key}_next_{doc_name}") and current < len(questions) - 1:
-                            st.session_state[f"{quiz_key}_current"] = current + 1
+                        score = correct / len(questions)
+                        passed = score >= 0.8
 
-                    if current == len(questions) - 1:
-                        if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
-                            correct = 0
-                            for idx, question in enumerate(questions):
-                                selected = answers[idx]
-                                if selected is None:
-                                    continue
-                                if question["options"][selected] == question["correct_answer"]:
-                                    correct += 1
-                            score = correct / len(questions)
-                            passed = score >= 0.8
+                        student_name = st.session_state.get('name', 'Unbekannt')
+                        student_username = st.session_state.get('username', 'Unbekannt')
+                        log_manager.record_quiz_attempt(
+                            document_name=doc_name,
+                            student_name=student_name,
+                            student_username=student_username,
+                            score=score,
+                            passed=passed
+                        )
 
-                            student_name = st.session_state.get('name', 'Unbekannt')
-                            student_username = st.session_state.get('username', 'Unbekannt')
-                            log_manager.record_quiz_attempt(
-                                document_name=doc_name,
-                                student_name=student_name,
-                                student_username=student_username,
-                                score=score,
-                                passed=passed
-                            )
-
-                            st.success(f"Du hast {int(score * 100)}% erreicht. {'Bestanden' if passed else 'Nicht bestanden'}")
-                            del st.session_state[f"{quiz_key}_questions"]
-                            del st.session_state[f"{quiz_key}_current"]
-                            del st.session_state[f"{quiz_key}_answers"]
+                        st.success(f"Du hast {int(score * 100)}% erreicht. {'Bestanden' if passed else 'Nicht bestanden'}")
+                        del st.session_state[f"{quiz_key}_questions"]
+                        del st.session_state[f"{quiz_key}_current"]
+                        del st.session_state[f"{quiz_key}_answers"]
