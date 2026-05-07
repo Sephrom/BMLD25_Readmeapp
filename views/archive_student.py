@@ -166,15 +166,21 @@ else:
                     st.markdown(f"### Frage {current + 1} / {len(questions)}")
                     st.write(q["question"])
 
-                    selected_index = st.radio(
-                        "Antwort wählen",
-                        options=list(range(len(q["options"]))),
-                        format_func=lambda i: q["options"][i],
-                        index=answers[current] if answers[current] is not None else 0,
-                        key=f"{quiz_key}_answer_{current}"
-                    )
-                    answers[current] = selected_index
-                    st.session_state[f"{quiz_key}_answers"] = answers
+                    option_labels = ["A", "B", "C", "D"]
+                    selected_index = answers[current]
+
+                    cols = st.columns(len(q["options"]))
+                    for idx, option in enumerate(q["options"]):
+                        label = option_labels[idx] if idx < len(option_labels) else str(idx + 1)
+                        button_label = f"{label}) {option}"
+                        if cols[idx].button(button_label, key=f"{quiz_key}_{current}_option_{idx}"):
+                            selected_index = idx
+                            answers[current] = idx
+                            st.session_state[f"{quiz_key}_answers"] = answers
+
+                    if selected_index is not None:
+                        chosen_label = option_labels[selected_index] if selected_index < len(option_labels) else str(selected_index + 1)
+                        st.markdown(f"**Ausgewählt:** {chosen_label}) {q['options'][selected_index]}")
 
                     col_back, col_next = st.columns(2)
                     with col_back:
