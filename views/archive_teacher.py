@@ -153,8 +153,9 @@ else:
                     if document_manager.save_quiz(selected_doc, {"questions": questions}):
                         st.success("Quiz gespeichert.")
                     else:
-                        st.error("Fehler beim Speichern des Quiz.")  
-                   with st.expander("🎯 Klassen zuweisen"):
+                        st.error("Fehler beim Speichern des Quiz.")
+
+            with st.expander("🎯 Klassen zuweisen"):
                 available_classes = document_manager.get_all_classes_from_students()
                 
                 # Lade aktuelle Zuordnungen
@@ -177,7 +178,6 @@ else:
                         st.rerun()
                     else:
                         st.error("Fehler beim Speichern der Klassenzuordnung")
-
             # Zeige Logs
             st.write("**Schüler, die dieses Dokument gelesen haben:**")
             
