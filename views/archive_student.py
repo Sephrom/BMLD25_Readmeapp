@@ -161,33 +161,36 @@ else:
 
                     st.divider()
                 
-                                # Quiz-Fenster
+                # Quiz-Fenster
                 quiz_key = f"quiz_{selected_folder}_{doc_name}"
                 if st.session_state.get(f"{quiz_key}_questions"):
                     questions = st.session_state[f"{quiz_key}_questions"]
-                    answers = st.session_state[f"{quiz_key}_answers"]
 
-                    for idx, q in enumerate(questions):
-                        st.markdown(f"### Frage {idx + 1} / {len(questions)}")
-                        st.write(q["question"])
+                    form_key = f"{quiz_key}_form_{doc_name}"
+                    with st.form(key=form_key):
+                        for idx, q in enumerate(questions):
+                            st.markdown(f"### Frage {idx + 1} / {len(questions)}")
+                            st.write(q["question"])
 
-                        cols = st.columns(len(q["options"]))
-                        for opt_idx, option in enumerate(q["options"]):
-                            label = f"{chr(65 + opt_idx)}) {option}"
-                            if cols[opt_idx].button(label, key=f"{quiz_key}_{idx}_option_{opt_idx}"):
-                                answers[idx] = opt_idx
-                                st.session_state[f"{quiz_key}_answers"] = answers
+                            selected = st.radio(
+                                "",
+                                options=list(range(len(q["options"]))),
+                                format_func=lambda i, opts=q["options"]: f"{chr(65+i)}) {opts[i]}",
+                                key=f"{quiz_key}_answer_{idx}"
+                            )
 
-                        if answers[idx] is not None:
-                            chosen_label = chr(65 + answers[idx])
-                            st.markdown(f"**Ausgewählt:** {chosen_label}) {q['options'][answers[idx]]}")
+                            if selected is not None:
+                                chosen_label = chr(65 + selected)
+                                st.markdown(f"**Ausgewählt:** {chosen_label}) {q['options'][selected]}")
 
-                        st.divider()
+                            st.divider()
 
-                    if st.button("Quiz abschliessen", key=f"{quiz_key}_submit_{doc_name}"):
+                        submit = st.form_submit_button("Quiz abschliessen")
+
+                    if submit:
                         correct = 0
                         for idx, question in enumerate(questions):
-                            selected = answers[idx]
+                            selected = st.session_state.get(f"{quiz_key}_answer_{idx}")
                             if selected is None:
                                 continue
                             if question["options"][selected] == question["correct_answer"]:
@@ -209,4 +212,4 @@ else:
                         st.success(f"Du hast {int(score * 100)}% erreicht. {'Bestanden' if passed else 'Nicht bestanden'}")
                         del st.session_state[f"{quiz_key}_questions"]
                         del st.session_state[f"{quiz_key}_current"]
-                        del st.session_state[f"{quiz_key}_answers"]
+                        del st.session_state[f"{quiz_key}_answers"]                
