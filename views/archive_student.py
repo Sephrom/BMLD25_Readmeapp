@@ -33,9 +33,6 @@ else:
 
 
 if not folders:
-
-
-if not folders:
     st.info("Keine Dokumente verfügbar.")
 else:
     # Wähle Ordner
