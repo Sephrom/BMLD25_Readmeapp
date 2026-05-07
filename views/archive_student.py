@@ -121,7 +121,11 @@ else:
                 quiz_def = document_manager.load_quiz(doc_name)
                 if quiz_def.get("questions"):
                     if st.button("📝 Quiz starten", key=f"start_quiz_{selected_folder}_{doc_name}"):
-                        questions = [q.copy() for q in quiz_def["questions"]]
+                        questions = [
+                            q.copy() for q in quiz_def["questions"]
+                            if q.get("question", "").strip()
+                            and any(opt.strip() for opt in q.get("options", []))
+                        ]
                         random.shuffle(questions)
                         for q in questions:
                             correct_answer = q["options"][q["correct_index"]]
