@@ -141,12 +141,14 @@ else:
                 if st.session_state.get(f"open_{selected_folder}_{doc_name}"):
                     st.divider()
                     st.write(f"**PDF: {doc_name}**")
-                    
-                    pdf_content = document_manager.get_document(selected_folder, doc_name)
+
+                    pdf_session_key = f"pdf_content_{selected_folder}_{doc_name}"
+                    if pdf_session_key not in st.session_state:
+                        st.session_state[pdf_session_key] = document_manager.get_document(selected_folder, doc_name)
+
+                    pdf_content = st.session_state[pdf_session_key]
                     if pdf_content:
                         st.pdf(pdf_content)
-                        
-                        # Download-Button
                         st.download_button(
                             label="⬇️ PDF herunterladen",
                             data=pdf_content,
@@ -156,7 +158,7 @@ else:
                         )
                     else:
                         st.error("PDF konnte nicht geladen werden.")
-                    
+
                     st.divider()
                 
                 # Quiz-Fenster
