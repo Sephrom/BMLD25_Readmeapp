@@ -6,7 +6,7 @@
 
 Diese Streamlit-Anwendung ermöglicht Lehrpersonen, Lernmaterialien (PDF-Dokumente) hochzuladen und zu verwalten sowie die Aktivitäten ihrer Schüler nachzuverfolgen. Schüler können zugewiesene Dokumente ansehen, als gelesen markieren und zugehörige Quizzes absolvieren.
 
-Die App richtet sich an Lehrpersonen und Schüler an Schulen und Hochschulen, die digitale Lernfortschritte transparent tracken möchten.
+Die App richtet sich an Lehrpersonen und Schüler an Schulen, die digitale Lernfortschritte transparent tracken möchten.
 
 ---
 
