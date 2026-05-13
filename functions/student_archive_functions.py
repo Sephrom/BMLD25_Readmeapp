@@ -82,7 +82,6 @@ def render_document_header(doc_name, selected_folder, user_class, document_manag
     return status, due_date
 
 def render_document_buttons(log_manager, selected_folder, doc_name):
-    """Zeigt die Open-/Read-Buttons und schreibt gegebenenfalls Log-Einträge."""
     open_key = f"open_{selected_folder}_{doc_name}"
     open_logged_key = f"open_logged_{selected_folder}_{doc_name}"
     student_name = st.session_state.get('name', 'Unbekannt')
@@ -107,7 +106,7 @@ def render_document_buttons(log_manager, selected_folder, doc_name):
             student_name=student_name,
             student_username=student_username
         )
-        st.success(f"✓ '{doc_name}' als gelesen markiert!")    
+        st.success(f"✓ '{doc_name}' als gelesen markiert!")  
 
 def handle_quiz_start(document_manager, selected_folder, doc_name):
     """
