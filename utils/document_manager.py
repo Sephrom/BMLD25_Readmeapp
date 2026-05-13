@@ -1,20 +1,29 @@
 import os
-import pandas as pd
 from utils.data_manager import DataManager
+
 
 class DocumentManager:
     """Verwaltet Dokumente auf der Switch Drive"""
-    
+
     def __init__(self, data_manager: DataManager):
         self.data_manager = data_manager
         self.documents_folder = "documents"
-    
+
+    @staticmethod
+    def _validate_name(name: str, name_type: str = "folder") -> bool:
+        if not name or not isinstance(name, str):
+            return False
+        if ".." in name or "/" in name or "\\" in name:
+            return False
+        if name.strip() == "":
+            return False
+        return True
+
     def get_folders(self):
-        """Gibt alle Ordner im Dokumente-Verzeichnis zurück"""
         try:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}"
             folders = []
-            
+
             if self.data_manager.fs.exists(path):
                 for item in self.data_manager.fs.listdir(path):
                     item_path = item['name']
@@ -22,16 +31,17 @@ class DocumentManager:
                         folder_name = os.path.basename(item_path)
                         folders.append(folder_name)
             return folders
-        except Exception as e:
-            print(f"Fehler beim Lesen der Ordner: {e}")
+        except Exception:
             return []
-    
+
     def get_documents_in_folder(self, folder_name: str):
-        """Gibt alle PDF-Dateien in einem Ordner zurück"""
+        if not self._validate_name(folder_name, "folder"):
+            return []
+
         try:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}"
             documents = []
-            
+
             if self.data_manager.fs.exists(path):
                 for item in self.data_manager.fs.listdir(path):
                     item_path = item['name']
@@ -39,150 +49,175 @@ class DocumentManager:
                         doc_name = os.path.basename(item_path)
                         documents.append(doc_name)
             return documents
-        except Exception as e:
-            print(f"Fehler beim Lesen der Dokumente: {e}")
+        except Exception:
             return []
-    
+
     def save_document(self, file_content: bytes, folder_name: str, file_name: str):
-        """Speichert eine PDF-Datei in einem Ordner auf der Switch Drive"""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(file_name, "file"):
+            return False
+
         try:
+            file_name = os.path.basename(file_name)
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}/{file_name}"
-            
-            # Erstelle Ordner wenn nicht vorhanden
+
             folder_path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}"
             if not self.data_manager.fs.exists(folder_path):
                 self.data_manager.fs.makedirs(folder_path, exist_ok=True)
-            
-            # Speichere Datei
+
             with self.data_manager.fs.open(path, 'wb') as f:
                 f.write(file_content)
-            
+
             return True
-        except Exception as e:
-            print(f"Fehler beim Speichern der Datei: {e}")
+        except Exception:
             return False
-    
+
     def create_folder(self, folder_name: str):
-        """Erstellt einen neuen Ordner"""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+
         try:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}"
             self.data_manager.fs.makedirs(path, exist_ok=True)
             return True
-        except Exception as e:
-            print(f"Fehler beim Erstellen des Ordners: {e}")
+        except Exception:
             return False
-    
+
     def get_document(self, folder_name: str, file_name: str) -> bytes:
-        """Lädt eine PDF-Datei von der Switch Drive"""
+        if not self._validate_name(folder_name, "folder"):
+            return None
+        if not self._validate_name(file_name, "file"):
+            return None
+
         try:
+            file_name = os.path.basename(file_name)
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}/{file_name}"
-            
+
             if self.data_manager.fs.exists(path):
                 with self.data_manager.fs.open(path, 'rb') as f:
                     return f.read()
             return None
-        except Exception as e:
-            print(f"Fehler beim Laden der Datei: {e}")
+        except Exception:
             return None
-    
+
     def load_quiz(self, folder_name: str, document_name: str) -> dict:
-        """Lädt die Quiz-Definition für ein Dokument (mit Folder im Pfad)"""
+        if not self._validate_name(folder_name, "folder"):
+            return {"questions": []}
+        if not self._validate_name(document_name, "file"):
+            return {"questions": []}
+
         quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
         return self.data_manager.load_app_data(quiz_file, initial_value={"questions": []})
-    
+
     def save_quiz(self, folder_name: str, document_name: str, quiz_data: dict) -> bool:
-        """Speichert die Quiz-Definition für ein Dokument (mit Folder im Pfad)"""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(document_name, "file"):
+            return False
+
         quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
         try:
             self.data_manager.save_app_data(quiz_data, quiz_file)
             return True
-        except Exception as e:
-            print(f"Fehler beim Speichern des Quiz: {e}")
+        except Exception:
             return False
 
     def load_document_meta(self, folder_name: str, document_name: str) -> dict:
-        """Lädt Metadaten für ein Dokument."""
+        if not self._validate_name(folder_name, "folder"):
+            return {"due_date": None}
+        if not self._validate_name(document_name, "file"):
+            return {"due_date": None}
+
         meta_file = f"documents/{folder_name}/{document_name}.meta.json"
         return self.data_manager.load_app_data(meta_file, initial_value={"due_date": None})
 
     def save_document_meta(self, folder_name: str, document_name: str, meta_data: dict) -> bool:
-        """Speichert Metadaten für ein Dokument."""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(document_name, "file"):
+            return False
+
         meta_file = f"documents/{folder_name}/{document_name}.meta.json"
         try:
             self.data_manager.save_app_data(meta_data, meta_file)
             return True
-        except Exception as e:
-            print(f"Fehler beim Speichern der Dokument-Metadaten: {e}")
+        except Exception:
             return False
 
     def quiz_exists(self, folder_name: str, document_name: str) -> bool:
-        """Prüft, ob für ein Dokument ein Quiz existiert."""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(document_name, "file"):
+            return False
+
         quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
-        return self.data_manager.fs.exists(f"{self.data_manager.fs_root_folder}/{quiz_file}")
+        try:
+            return self.data_manager.fs.exists(f"{self.data_manager.fs_root_folder}/{quiz_file}")
+        except Exception:
+            return False
 
     def delete_document(self, folder_name: str, file_name: str) -> bool:
-        """
-        Löscht ein Dokument und ALLE zugehörigen Daten:
-        - PDF-Datei
-        - Metadaten
-        - Quiz
-        - Klassenzuordnungen
-        - Logs
-        """
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(file_name, "file"):
+            return False
+
         try:
+            file_name = os.path.basename(file_name)
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}/{file_name}"
-            
+
             if self.data_manager.fs.exists(path):
-                # 1. Lösche PDF
                 self.data_manager.fs.rm(path)
-                
-                # 2. Lösche Metadaten
+
                 meta_file = f"documents/{folder_name}/{file_name}.meta.json"
                 meta_path = f"{self.data_manager.fs_root_folder}/{meta_file}"
                 if self.data_manager.fs.exists(meta_path):
                     self.data_manager.fs.rm(meta_path)
-                
-                # 3. Lösche Quiz
+
                 quiz_file = f"documents/{folder_name}/{file_name}_quiz.json"
                 quiz_path = f"{self.data_manager.fs_root_folder}/{quiz_file}"
                 if self.data_manager.fs.exists(quiz_path):
                     self.data_manager.fs.rm(quiz_path)
-                
-                # 4. Lösche Klassenzuordnungen
+
                 classes_file = f"documents/{folder_name}/{file_name}.classes.json"
                 classes_path = f"{self.data_manager.fs_root_folder}/{classes_file}"
                 if self.data_manager.fs.exists(classes_path):
                     self.data_manager.fs.rm(classes_path)
-                
-                # 5. Lösche Logs
+
                 logs_file = f"documents/{folder_name}/{file_name}_log.csv"
                 logs_path = f"{self.data_manager.fs_root_folder}/{logs_file}"
                 if self.data_manager.fs.exists(logs_path):
                     self.data_manager.fs.rm(logs_path)
-                
+
                 return True
             return False
-        except Exception as e:
-            print(f"Fehler beim Löschen der Datei und ihrer Daten: {e}")
+        except Exception:
             return False
 
     def load_class_assignments(self, folder_name: str, document_name: str) -> dict:
-        """Lädt die Klassenzuordnungen für ein Dokument."""
+        if not self._validate_name(folder_name, "folder"):
+            return {"assigned_classes": []}
+        if not self._validate_name(document_name, "file"):
+            return {"assigned_classes": []}
+
         classes_file = f"documents/{folder_name}/{document_name}.classes.json"
         return self.data_manager.load_app_data(classes_file, initial_value={"assigned_classes": []})
 
     def save_class_assignments(self, folder_name: str, document_name: str, classes_list: list) -> bool:
-        """Speichert die Klassenzuordnungen für ein Dokument."""
+        if not self._validate_name(folder_name, "folder"):
+            return False
+        if not self._validate_name(document_name, "file"):
+            return False
+
         classes_file = f"documents/{folder_name}/{document_name}.classes.json"
         try:
             self.data_manager.save_app_data({"assigned_classes": classes_list}, classes_file)
             return True
-        except Exception as e:
-            print(f"Fehler beim Speichern der Klassenzuordnungen: {e}")
+        except Exception:
             return False
 
     def get_all_classes_from_students(self) -> list:
-        """Gibt alle Klassen zurück, die von Schülern verwendet werden."""
         try:
             creds = self.data_manager.load_app_data('credentials.yaml', initial_value={"usernames": {}})
             classes = set()
@@ -191,6 +226,5 @@ class DocumentManager:
                 if user_class:
                     classes.add(user_class)
             return sorted(list(classes))
-        except Exception as e:
-            print(f"Fehler beim Lesen der Klassen: {e}")
+        except Exception:
             return []

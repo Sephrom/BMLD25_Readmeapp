@@ -1,18 +1,16 @@
 import streamlit as st
 
 
-
-
 def handle_document_upload(document_manager, selected_folder, uploaded_file, due_date):
     """
     Verarbeitet das Hochladen eines Dokuments
-    
+
     Args:
         document_manager: DocumentManager-Instanz
         selected_folder: Zielordner
         uploaded_file: Hochgeladene Datei
         due_date: Fälligkeitsdatum
-    
+
     Returns:
         bool: True bei Erfolg
     """
@@ -26,12 +24,12 @@ def handle_document_upload(document_manager, selected_folder, uploaded_file, due
             uploaded_file.name,
             {"due_date": due_date.strftime("%Y-%m-%d")}
         )
-        
+
         if success:
             st.success(f"✓ '{uploaded_file.name}' in '{selected_folder}' hochgeladen!")
         else:
             st.error("Fehler beim Hochladen")
-        
+
         return success
     except Exception as e:
         st.error(f"Fehler beim Hochladen: {e}")
@@ -40,8 +38,8 @@ def handle_document_upload(document_manager, selected_folder, uploaded_file, due
 
 def render_quiz_editor(document_manager, selected_doc, selected_folder_logs):
     """
-    Rendert den Quiz-Editor und speichert Änderungen
-    
+    Rendert den Quiz-Editor und speichert nur vollständige Fragen.
+
     Args:
         document_manager: DocumentManager-Instanz
         selected_doc: Gewähltes Dokument
@@ -51,6 +49,7 @@ def render_quiz_editor(document_manager, selected_doc, selected_folder_logs):
         quiz_def = document_manager.load_quiz(selected_folder_logs, selected_doc)
         questions = quiz_def.get("questions", [])
 
+        # Stelle 10 Eingabefelder bereit
         if len(questions) < 10:
             for _ in range(10 - len(questions)):
                 questions.append({
@@ -83,7 +82,25 @@ def render_quiz_editor(document_manager, selected_doc, selected_folder_logs):
             )
 
         if st.button("Quiz speichern", key=f"save_quiz_{selected_folder_logs}_{selected_doc}"):
-            if document_manager.save_quiz(selected_folder_logs, selected_doc, {"questions": questions}):
-                st.success("Quiz gespeichert.")
+            # Filtere nur vollständige Fragen
+            complete_questions = []
+            for q in questions:
+                question_text = q.get("question", "").strip()
+                options = q.get("options", [])
+                all_options_filled = all(opt.strip() for opt in options)
+                correct_idx = q.get("correct_index", 0)
+
+                if question_text and all_options_filled and 0 <= correct_idx < 4:
+                    complete_questions.append(q)
+
+            if not complete_questions:
+                st.warning("⚠️ Keine vollständigen Fragen gefunden. Bitte füllen Sie mindestens eine Frage aus.")
             else:
-                st.error("Fehler beim Speichern des Quiz.")
+                if document_manager.save_quiz(
+                    selected_folder_logs,
+                    selected_doc,
+                    {"questions": complete_questions}
+                ):
+                    st.success(f"✓ Quiz gespeichert ({len(complete_questions)} Fragen).")
+                else:
+                    st.error("Fehler beim Speichern des Quiz.")

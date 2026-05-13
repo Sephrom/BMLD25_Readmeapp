@@ -7,42 +7,42 @@ from datetime import date
 
 class LogManager:
     """Verwaltet Dokument-Logs für Schüler-Aktivitäten (spaltenweise Struktur)"""
-    
+
     def __init__(self, data_manager: DataManager):
         self.data_manager = data_manager
-    
+
     @staticmethod
     def get_ch_timestamp():
-        """Gibt aktuellen Schweizer Zeitstempel zurück"""
         return datetime.now(ZoneInfo('Europe/Zurich')).strftime("%Y-%m-%d %H:%M:%S")
-    
+
     @staticmethod
     def parse_due_date(due_date):
         if not due_date:
             return None
         try:
             return datetime.fromisoformat(due_date).date()
-        except ValueError:
+        except (ValueError, TypeError):
             return None
 
-    def get_student_status(self, row, due_date=None):
-        """Berechnet den Ampelstatus für einen Eintrag."""
+    def get_student_status(self, row, due_date=None, quiz_required=True):
         due = self.parse_due_date(due_date)
         read = pd.notna(row.get('read_timestamp'))
         passed = pd.notna(row.get('quiz_passed_timestamp'))
 
-        if read and passed:
-            return "🟢 Erledigt"
         if read:
+            if not quiz_required:
+                return "🟢 Erledigt"
+            if passed:
+                return "🟢 Erledigt"
             if due and date.today() > due:
                 return "🔴 Überfällig"
             return "🟡 Gelesen, Quiz offen"
+
         if due and date.today() > due:
             return "🔴 Überfällig"
         return "🔴 Nicht begonnen"
 
     def _get_or_create_log_df(self, log_file: str) -> pd.DataFrame:
-        """Lade Log-Datei oder erstelle neue mit korrekter Struktur"""
         columns = [
             'student_name',
             'student_username',
@@ -58,26 +58,26 @@ class LogManager:
                 log_file,
                 initial_value=pd.DataFrame(columns=columns)
             )
-            
+
             if 'action' in log_df.columns:
                 unique_combos = log_df[['student_name', 'student_username', 'document_name']].drop_duplicates()
                 new_rows = []
-                
+
                 for _, combo in unique_combos.iterrows():
                     mask = (
                         (log_df['student_username'] == combo['student_username']) &
                         (log_df['document_name'] == combo['document_name'])
                     )
                     old_entries = log_df[mask]
-                    
+
                     opened_ts = None
                     read_ts = None
-                    
+
                     if any(old_entries['action'] == 'open'):
                         opened_ts = old_entries[old_entries['action'] == 'open']['timestamp'].iloc[0]
                     if any(old_entries['action'] == 'read'):
                         read_ts = old_entries[old_entries['action'] == 'read']['timestamp'].iloc[0]
-                    
+
                     new_row = {
                         'student_name': combo['student_name'],
                         'student_username': combo['student_username'],
@@ -89,15 +89,15 @@ class LogManager:
                         'last_quiz_score': None
                     }
                     new_rows.append(new_row)
-                
+
                 new_df = pd.DataFrame(new_rows)
                 self.data_manager.save_app_data(new_df, log_file)
                 return new_df
-            
+
             for col in columns:
                 if col not in log_df.columns:
                     log_df[col] = None
-            
+
             log_df = log_df.astype({
                 'student_name': 'object',
                 'student_username': 'object',
@@ -108,19 +108,19 @@ class LogManager:
                 'quiz_attempts': 'int64',
                 'last_quiz_score': 'float64'
             }, errors='ignore')
-            
+
             return log_df
 
         except Exception:
             return pd.DataFrame(columns=columns)
-    
-    def _get_or_create_row(self, log_df: pd.DataFrame, document_name: str, 
+
+    def _get_or_create_row(self, log_df: pd.DataFrame, document_name: str,
                           student_name: str, student_username: str) -> tuple:
         mask = (
             (log_df['student_username'] == student_username) &
             (log_df['document_name'] == document_name)
         )
-        
+
         if mask.any():
             return log_df, int(log_df[mask].index[0])
         else:
@@ -142,22 +142,22 @@ class LogManager:
         log_file = f"documents/{folder_name}/{document_name}_log.csv"
         log_df = self._get_or_create_log_df(log_file)
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
-        
+
         row_idx = int(row_idx)
         if pd.isna(log_df.at[row_idx, 'opened_timestamp']):
             log_df.at[row_idx, 'opened_timestamp'] = self.get_ch_timestamp()
             self.data_manager.save_app_data(log_df, log_file)
-    
+
     def mark_document_as_read(self, folder_name: str, document_name: str, student_name: str, student_username: str):
         log_file = f"documents/{folder_name}/{document_name}_log.csv"
         log_df = self._get_or_create_log_df(log_file)
         log_df, row_idx = self._get_or_create_row(log_df, document_name, student_name, student_username)
-        
+
         row_idx = int(row_idx)
         if pd.isna(log_df.at[row_idx, 'read_timestamp']):
             log_df.at[row_idx, 'read_timestamp'] = self.get_ch_timestamp()
             self.data_manager.save_app_data(log_df, log_file)
-    
+
     def record_quiz_attempt(self, folder_name: str, document_name: str, student_name: str, student_username: str,
                             score: float, passed: bool):
         log_file = f"documents/{folder_name}/{document_name}_log.csv"
@@ -175,7 +175,7 @@ class LogManager:
             log_df.at[row_idx, 'quiz_passed_timestamp'] = self.get_ch_timestamp()
 
         self.data_manager.save_app_data(log_df, log_file)
-    
+
     def get_document_logs(self, folder_name: str, document_name: str) -> pd.DataFrame:
         log_file = f"documents/{folder_name}/{document_name}_log.csv"
         return self._get_or_create_log_df(log_file)

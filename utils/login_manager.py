@@ -45,7 +45,17 @@ class LoginManager:
         self.data_manager = data_manager
         self.auth_credentials_file = auth_credentials_file
         self.auth_cookie_name = auth_cookie_name
-        self.auth_cookie_key = secrets.token_urlsafe(32)
+        
+        # Lade Secrets sicher
+        try:
+            self.auth_cookie_key = st.secrets.get("auth", {}).get("cookie_key")
+            if not self.auth_cookie_key:
+                st.error("❌ Fehler: 'auth.cookie_key' nicht in .streamlit/secrets.toml konfiguriert.")
+                st.stop()
+        except Exception:
+            st.error("❌ Fehler: .streamlit/secrets.toml nicht gefunden oder nicht lesbar.")
+            st.stop()
+        
         self.auth_credentials = self._load_auth_credentials()
         self.authenticator = stauth.Authenticate(
             self.auth_credentials, self.auth_cookie_name, self.auth_cookie_key
@@ -104,10 +114,18 @@ class LoginManager:
         st.info("""
         The password must be 8-20 characters long and include at least one uppercase letter,
         one lowercase letter, one digit, and one special character from @$!%*?&.
-        """) 
+        """)
 
-        
-        # Lehrerzuganscode ZUERST abfragen
+        # Lehrerzuganscode aus Secrets laden
+        try:
+            teacher_code_secret = st.secrets.get("auth", {}).get("teacher_code")
+            if not teacher_code_secret:
+                st.error("❌ Fehler: 'auth.teacher_code' nicht in .streamlit/secrets.toml konfiguriert.")
+                st.stop()
+        except Exception:
+            st.error("❌ Fehler: .streamlit/secrets.toml nicht gefunden oder nicht lesbar.")
+            st.stop()
+
         teacher_code = st.text_input(
             "Lehrerzuganscode (optional)",
             type="password",
@@ -119,27 +137,24 @@ class LoginManager:
             help="z. B. 1A, 2B oder 3C"
         )
 
-        # DANN Registrierung
         res = self.authenticator.register_user()
-        
+
         if res[1] is not None:
             # Bestimme die Rolle basierend auf dem Lehrerzugangscode
-            valid_teacher_code = "LEHRER2025"
-            if teacher_code == valid_teacher_code:
+            if teacher_code == teacher_code_secret:
                 role = "teacher"
-                st.success("Lehrer-Account erstellt")
+                st.success("✓ Lehrer-Account erstellt")
             else:
                 role = "student"
-                st.success("Schüler-Account erstellt")
-        
+                st.success("✓ Schüler-Account erstellt")
+
             # Speichere die Rolle in den Credentials
             if res[1] in self.auth_credentials['usernames']:
                 self.auth_credentials['usernames'][res[1]]['role'] = role
                 self.auth_credentials['usernames'][res[1]]['class'] = user_class or None
-            
-            st.success(f"User {res[1]} registered successfully")
+
             try:
                 self._save_auth_credentials()
-                st.success("Credentials saved successfully")
+                st.success(f"✓ User {res[1]} registered successfully")
             except Exception as e:
-                st.error(f"Failed to save credentials: {e}")
+                st.error(f"Fehler beim Speichern der Anmeldedaten: {e}")

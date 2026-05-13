@@ -10,13 +10,13 @@ def toggle_pdf_view(key):
 def is_assigned_to_user_class(folder_name, doc_name, user_class, document_manager):
     """
     Prüft, ob ein Dokument dem aktuellen Schüler zugeordnet ist
-    
+
     Args:
         folder_name: Name des Ordners (Klasse)
         doc_name: Name des Dokuments
         user_class: Klasse des Schülers
         document_manager: DocumentManager-Instanz
-    
+
     Returns:
         bool: True wenn Schüler Zugriff hat
     """
@@ -31,11 +31,11 @@ def is_assigned_to_user_class(folder_name, doc_name, user_class, document_manage
 def get_available_folders_for_user(document_manager, user_class):
     """
     Filtert verfügbare Ordner für einen Schüler
-    
+
     Args:
         document_manager: DocumentManager-Instanz
         user_class: Klasse des Schülers
-    
+
     Returns:
         list: Verfügbare Ordner-Namen
     """
@@ -51,7 +51,7 @@ def get_available_folders_for_user(document_manager, user_class):
 def get_document_status_and_meta(document_manager, log_manager, selected_folder, doc_name, username):
     """
     Sammelt Status und Metadaten eines Dokuments
-    
+
     Returns:
         tuple: (status, due_date)
     """
@@ -59,11 +59,16 @@ def get_document_status_and_meta(document_manager, log_manager, selected_folder,
     due_date = meta.get("due_date")
     logs_df = log_manager.get_document_logs(selected_folder, doc_name)
     student_row = logs_df[(logs_df['student_username'] == username)]
-    
+
     status = "🔴 Nicht begonnen"
     if not student_row.empty:
-        status = log_manager.get_student_status(student_row.iloc[0], due_date=due_date)
-    
+        quiz_required = document_manager.quiz_exists(selected_folder, doc_name)
+        status = log_manager.get_student_status(
+            student_row.iloc[0],
+            due_date=due_date,
+            quiz_required=quiz_required
+        )
+
     return status, due_date
 
 
@@ -78,10 +83,12 @@ def render_document_header(doc_name, selected_folder, user_class, document_manag
     st.write(f"**Status:** {status}")
     if due_date:
         st.write(f"**Frist:** {due_date}")
-    
+
     return status, due_date
 
+
 def render_document_buttons(log_manager, selected_folder, doc_name):
+    """Zeigt die Open-/Read-Buttons und schreibt gegebenenfalls Log-Einträge."""
     open_key = f"open_{selected_folder}_{doc_name}"
     open_logged_key = f"open_logged_{selected_folder}_{doc_name}"
     student_name = st.session_state.get('name', 'Unbekannt')
@@ -106,7 +113,8 @@ def render_document_buttons(log_manager, selected_folder, doc_name):
             student_name=student_name,
             student_username=student_username
         )
-        st.success(f"✓ '{doc_name}' als gelesen markiert!")  
+        st.success(f"✓ '{doc_name}' als gelesen markiert!")
+
 
 def handle_quiz_start(document_manager, selected_folder, doc_name):
     """
@@ -162,7 +170,7 @@ def render_pdf_viewer(document_manager, selected_folder, doc_name):
 def render_quiz_form(selected_folder, doc_name):
     """
     Rendert das Quiz-Formular mit allen Fragen
-    
+
     Returns:
         bool: True wenn Quiz abgesendet wurde
     """
@@ -170,7 +178,7 @@ def render_quiz_form(selected_folder, doc_name):
     if st.session_state.get(f"{quiz_key}_questions"):
         questions = st.session_state[f"{quiz_key}_questions"]
         form_key = f"{quiz_key}_form_{doc_name}"
-        
+
         with st.form(key=form_key):
             for idx, q in enumerate(questions):
                 st.markdown(f"### Frage {idx + 1} / {len(questions)}")
@@ -190,9 +198,9 @@ def render_quiz_form(selected_folder, doc_name):
                 st.divider()
 
             submit = st.form_submit_button("Quiz abschliessen")
-        
+
         return submit
-    
+
     return False
 
 
@@ -202,7 +210,7 @@ def handle_quiz_submit(log_manager, selected_folder, doc_name, questions):
     """
     quiz_key = f"quiz_{selected_folder}_{doc_name}"
     correct = 0
-    
+
     for idx, question in enumerate(questions):
         selected = st.session_state.get(f"{quiz_key}_answer_{idx}")
         if selected is None:
@@ -210,7 +218,7 @@ def handle_quiz_submit(log_manager, selected_folder, doc_name, questions):
         if question["options"][selected] == question["correct_answer"]:
             correct += 1
 
-    score = correct / len(questions)
+    score = correct / len(questions) if questions else 0
     passed = score >= 0.8
 
     student_name = st.session_state.get('name', 'Unbekannt')
@@ -224,13 +232,12 @@ def handle_quiz_submit(log_manager, selected_folder, doc_name, questions):
         passed=passed
     )
 
-    st.success(f"Du hast {int(score * 100)}% erreicht. {'Bestanden' if passed else 'Nicht bestanden'}")
-    
+    st.success(f"Du hast {int(score * 100)}% erreicht. {'✓ Bestanden' if passed else '✗ Nicht bestanden'}")
+
     # Cleanup
-    del st.session_state[f"{quiz_key}_questions"]
-    del st.session_state[f"{quiz_key}_current"]
-    del st.session_state[f"{quiz_key}_answers"]
-
-
-
-
+    if f"{quiz_key}_questions" in st.session_state:
+        del st.session_state[f"{quiz_key}_questions"]
+    if f"{quiz_key}_current" in st.session_state:
+        del st.session_state[f"{quiz_key}_current"]
+    if f"{quiz_key}_answers" in st.session_state:
+        del st.session_state[f"{quiz_key}_answers"]
