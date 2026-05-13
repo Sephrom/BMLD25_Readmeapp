@@ -12,4 +12,41 @@ __pycache__/
 *.egg
 *.egg-info/
 
-*.toml
+# Streamlit Secrets
+.streamlit/secrets.toml
+.streamlit/Secrets.toml
+
+# Hidden files and folders
+.*
+!.gitignore
+!.streamlit
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project
+credentials.yaml
+*.log
