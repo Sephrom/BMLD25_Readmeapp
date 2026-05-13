@@ -1,6 +1,8 @@
 import streamlit as st
 
 
+
+
 def handle_document_upload(document_manager, selected_folder, uploaded_file, due_date):
     """
     Verarbeitet das Hochladen eines Dokuments
@@ -46,7 +48,7 @@ def render_quiz_editor(document_manager, selected_doc, selected_folder_logs):
         selected_folder_logs: Ordner des Dokuments
     """
     with st.expander("✏️ Quiz bearbeiten"):
-        quiz_def = document_manager.load_quiz(selected_doc)
+        quiz_def = document_manager.load_quiz(selected_folder_logs, selected_doc)
         questions = quiz_def.get("questions", [])
 
         if len(questions) < 10:
@@ -62,26 +64,26 @@ def render_quiz_editor(document_manager, selected_doc, selected_folder_logs):
             q["question"] = st.text_input(
                 f"Frage {i + 1}",
                 value=q.get("question", ""),
-                key=f"quiz_question_{selected_doc}_{i}"
+                key=f"quiz_question_{selected_folder_logs}_{selected_doc}_{i}"
             )
             opts = q.get("options", ["", "", "", ""])
             for j in range(4):
                 opts[j] = st.text_input(
                     f"Antwort {chr(65 + j)}",
                     value=opts[j],
-                    key=f"quiz_option_{selected_doc}_{i}_{j}"
+                    key=f"quiz_option_{selected_folder_logs}_{selected_doc}_{i}_{j}"
                 )
             q["options"] = opts
             q["correct_index"] = st.selectbox(
                 "Richtige Antwort",
                 options=list(range(4)),
                 index=q.get("correct_index", 0),
-                format_func=lambda x, opts=opts: opts[x],
-                key=f"quiz_correct_{selected_doc}_{i}"
+                format_func=lambda x, opts=opts: opts[x] if opts[x] else f"Option {x + 1}",
+                key=f"quiz_correct_{selected_folder_logs}_{selected_doc}_{i}"
             )
 
-        if st.button("Quiz speichern", key=f"save_quiz_{selected_doc}"):
-            if document_manager.save_quiz(selected_doc, {"questions": questions}):
+        if st.button("Quiz speichern", key=f"save_quiz_{selected_folder_logs}_{selected_doc}"):
+            if document_manager.save_quiz(selected_folder_logs, selected_doc, {"questions": questions}):
                 st.success("Quiz gespeichert.")
             else:
                 st.error("Fehler beim Speichern des Quiz.")

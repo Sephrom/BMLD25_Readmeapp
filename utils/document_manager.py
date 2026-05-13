@@ -85,11 +85,21 @@ class DocumentManager:
             print(f"Fehler beim Laden der Datei: {e}")
             return None
     
-    def load_quiz(self, document_name: str) -> dict:
-        """Lädt die Quiz-Definition für ein Dokument."""
-        quiz_file = f"documents/{document_name}_quiz.json"
+    def load_quiz(self, folder_name: str, document_name: str) -> dict:
+        """Lädt die Quiz-Definition für ein Dokument (mit Folder im Pfad)"""
+        quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
         return self.data_manager.load_app_data(quiz_file, initial_value={"questions": []})
     
+    def save_quiz(self, folder_name: str, document_name: str, quiz_data: dict) -> bool:
+        """Speichert die Quiz-Definition für ein Dokument (mit Folder im Pfad)"""
+        quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
+        try:
+            self.data_manager.save_app_data(quiz_data, quiz_file)
+            return True
+        except Exception as e:
+            print(f"Fehler beim Speichern des Quiz: {e}")
+            return False
+
     def load_document_meta(self, folder_name: str, document_name: str) -> dict:
         """Lädt Metadaten für ein Dokument."""
         meta_file = f"documents/{folder_name}/{document_name}.meta.json"
@@ -104,33 +114,58 @@ class DocumentManager:
         except Exception as e:
             print(f"Fehler beim Speichern der Dokument-Metadaten: {e}")
             return False
-    def save_quiz(self, document_name: str, quiz_data: dict) -> bool:
-        """Speichert die Quiz-Definition für ein Dokument."""
-        quiz_file = f"documents/{document_name}_quiz.json"
-        try:
-            self.data_manager.save_app_data(quiz_data, quiz_file)
-            return True
-        except Exception as e:
-            print(f"Fehler beim Speichern des Quiz: {e}")
-            return False
 
-    def quiz_exists(self, document_name: str) -> bool:
+    def quiz_exists(self, folder_name: str, document_name: str) -> bool:
         """Prüft, ob für ein Dokument ein Quiz existiert."""
-        quiz_file = f"documents/{document_name}_quiz.json"
+        quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
         return self.data_manager.fs.exists(f"{self.data_manager.fs_root_folder}/{quiz_file}")
 
     def delete_document(self, folder_name: str, file_name: str) -> bool:
-        """Löscht eine PDF-Datei von der Switch Drive"""
+        """
+        Löscht ein Dokument und ALLE zugehörigen Daten:
+        - PDF-Datei
+        - Metadaten
+        - Quiz
+        - Klassenzuordnungen
+        - Logs
+        """
         try:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}/{file_name}"
             
             if self.data_manager.fs.exists(path):
+                # 1. Lösche PDF
                 self.data_manager.fs.rm(path)
+                
+                # 2. Lösche Metadaten
+                meta_file = f"documents/{folder_name}/{file_name}.meta.json"
+                meta_path = f"{self.data_manager.fs_root_folder}/{meta_file}"
+                if self.data_manager.fs.exists(meta_path):
+                    self.data_manager.fs.rm(meta_path)
+                
+                # 3. Lösche Quiz
+                quiz_file = f"documents/{folder_name}/{file_name}_quiz.json"
+                quiz_path = f"{self.data_manager.fs_root_folder}/{quiz_file}"
+                if self.data_manager.fs.exists(quiz_path):
+                    self.data_manager.fs.rm(quiz_path)
+                
+                # 4. Lösche Klassenzuordnungen
+                classes_file = f"documents/{folder_name}/{file_name}.classes.json"
+                classes_path = f"{self.data_manager.fs_root_folder}/{classes_file}"
+                if self.data_manager.fs.exists(classes_path):
+                    self.data_manager.fs.rm(classes_path)
+                
+                # 5. Lösche Logs
+                logs_file = f"documents/{folder_name}/{file_name}_log.csv"
+                logs_path = f"{self.data_manager.fs_root_folder}/{logs_file}"
+                if self.data_manager.fs.exists(logs_path):
+                    self.data_manager.fs.rm(logs_path)
+                
                 return True
             return False
         except Exception as e:
-            print(f"Fehler beim Löschen der Datei: {e}")
+            print(f"Fehler beim Löschen der Datei und ihrer Daten: {e}")
             return False
+
     def load_class_assignments(self, folder_name: str, document_name: str) -> dict:
         """Lädt die Klassenzuordnungen für ein Dokument."""
         classes_file = f"documents/{folder_name}/{document_name}.classes.json"
@@ -159,5 +194,3 @@ class DocumentManager:
         except Exception as e:
             print(f"Fehler beim Lesen der Klassen: {e}")
             return []
-
-

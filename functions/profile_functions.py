@@ -55,7 +55,7 @@ def get_assigned_documents_status(document_manager, log_manager, username, user_
             
             meta = document_manager.load_document_meta(folder, doc_name)
             due_date = meta.get("due_date")
-            logs_df = log_manager.get_document_logs(doc_name)
+            logs_df = log_manager.get_document_logs(folder, doc_name)
             student_row = logs_df[(logs_df['student_username'] == username)]
 
             if student_row.empty:

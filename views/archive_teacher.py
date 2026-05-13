@@ -136,7 +136,7 @@ else:
             # Zeige Logs
             st.write("**Schüler, die dieses Dokument gelesen haben:**")
             
-            logs_df = log_manager.get_document_logs(selected_doc)
+            logs_df = log_manager.get_document_logs(selected_folder_logs, selected_doc)
             
             if logs_df.empty:
                 st.info("Noch keine Aktivitäten für dieses Dokument.")
