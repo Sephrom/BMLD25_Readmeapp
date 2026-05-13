@@ -1,6 +1,12 @@
 import streamlit as st
+import pandas as pd
 from utils.data_manager import DataManager
 from utils.document_manager import DocumentManager
+from functions.class_management_functions import (
+    get_all_students_list,
+    assign_student_to_class,
+    get_classes_with_students
+)
 
 st.title("👥 Klassenverwaltung & Zuteilung")
 
@@ -15,21 +21,9 @@ st.divider()
 # TAB 1: Alle Schüler anzeigen
 st.subheader("📋 Alle Schüler & ihre Klassen")
 
-creds = data_manager.load_app_data('credentials.yaml', initial_value={"usernames": {}})
-students = []
-
-for username, user_data in creds.get("usernames", {}).items():
-    if user_data.get("role") == "student":
-        display_name = user_data.get("name") or user_data.get("username") or username
-        students.append({
-            "Benutzername": username,
-            "Name": display_name,
-            "Klasse": user_data.get("class") or "Keine Klasse",
-            "Email": user_data.get("email", "")
-        })
+students = get_all_students_list(data_manager)
 
 if students:
-    import pandas as pd
     st.dataframe(pd.DataFrame(students), hide_index=True, use_container_width=True)
 else:
     st.info("Keine Schüler vorhanden.")
@@ -60,10 +54,8 @@ if students:
     
     if st.button("Zuordnung speichern"):
         if selected_class:
-            creds['usernames'][selected_student]['class'] = selected_class
-            data_manager.save_app_data(creds, 'credentials.yaml')
-            st.success(f"✓ {selected_student} wurde der Klasse '{selected_class}' zugeordnet!")
-            st.rerun()
+            if assign_student_to_class(data_manager, selected_student, selected_class):
+                st.rerun()
         else:
             st.error("Bitte wähle oder erstelle eine Klasse.")
 
@@ -75,8 +67,9 @@ st.subheader("📊 Alle Klassen")
 all_classes_list = document_manager.get_all_classes_from_students()
 
 if all_classes_list:
+    classes_dict = get_classes_with_students(students)
     for class_name in all_classes_list:
-        class_students = [s for s in students if s["Klasse"] == class_name]
+        class_students = classes_dict.get(class_name, [])
         st.markdown(f"**{class_name}** ({len(class_students)} Schüler)")
         for student in class_students:
             st.write(f"  • {student['Name']} ({student['Benutzername']})")

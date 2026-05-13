@@ -11,9 +11,6 @@ data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")
 log_manager = LogManager(data_manager)
 document_manager = DocumentManager(data_manager)
 
-# Callback-Funktion für PDF-Anzeige Toggle
-def toggle_pdf_view(key):
-    st.session_state[key] = not st.session_state.get(key, False)
 
 st.info("Hier findest du alle Dokumente, die dein Lehrer hochgeladen hat.")
 
@@ -27,13 +24,6 @@ st.divider()
 
 user_class = st.session_state.get('class', None)
 
-def is_assigned_to_user_class(folder_name, doc_name, user_class):
-    if not user_class:
-        return False
-    if folder_name == user_class:
-        return True
-    assigned = document_manager.load_class_assignments(folder_name, doc_name).get("assigned_classes", [])
-    return user_class in assigned
 
 folders = []
 for folder in document_manager.get_folders():
