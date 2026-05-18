@@ -77,7 +77,7 @@ class LoginManager:
             self._register()
 
     def _login(self):
-        self.authenticator.login()
+        self.authenticator.login(captcha=True)
         if st.session_state["authentication_status"] is False:
             st.error("Username/password is incorrect")
         else:
@@ -104,7 +104,7 @@ class LoginManager:
             help="Nur ausfüllen, wenn Sie ein Lehrer sind"
         )
 
-        res = self.authenticator.register_user()
+        res = self.authenticator.register_user(captcha=True)
 
         if res[1] is not None:
             if teacher_code == teacher_code_secret:
