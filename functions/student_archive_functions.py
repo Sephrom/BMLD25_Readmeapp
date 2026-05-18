@@ -214,6 +214,48 @@ def render_quiz_form(selected_folder, doc_name):
 
             submit = st.form_submit_button("Quiz abschliessen")
 
-        return submit is not None
+        return submit 
 
     return False
+
+def handle_quiz_submit(log_manager, selected_folder, doc_name, questions):
+    """
+    Verarbeitet die Quiz-Einreichung und Bewertung.
+    """
+    quiz_key = f"quiz_{selected_folder}_{doc_name}"
+    correct = 0
+
+    for idx, question in enumerate(questions):
+        selected = st.session_state.get(f"{quiz_key}_answer_{idx}")
+        if selected is None:
+            continue
+        if question["options"][selected] == question["correct_answer"]:
+            correct += 1
+
+    score = correct / len(questions) if questions else 0
+    passed = score >= 0.8
+
+    student_name = st.session_state.get("name", "Unbekannt")
+    student_username = st.session_state.get("username", "Unbekannt")
+
+    log_manager.record_quiz_attempt(
+        selected_folder,
+        doc_name,
+        student_name=student_name,
+        student_username=student_username,
+        score=score,
+        passed=passed,
+    )
+
+    st.success(
+        f"Du hast {int(score * 100)}% erreicht. "
+        f"{'✓ Bestanden' if passed else '✗ Nicht bestanden'}"
+    )
+
+    for key in [
+        f"{quiz_key}_questions",
+        f"{quiz_key}_current",
+        f"{quiz_key}_answers",
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
