@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils.data_manager import DataManager
+from utils.app_config import get_data_manager
 from utils.log_manager import LogManager
 from utils.document_manager import DocumentManager
 from functions.profile_functions import (
@@ -11,13 +11,9 @@ from functions.profile_functions import (
 )
 from functions.ui_helpers import render_user_info_columns
 
-
 st.title("👤 Mein Profil")
 
-st.divider()
-
-# Initialisiere Manager
-data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")
+data_manager = get_data_manager()
 log_manager = LogManager(data_manager)
 document_manager = DocumentManager(data_manager)
 

@@ -99,14 +99,9 @@ class LoginManager:
             st.stop()
 
         teacher_code = st.text_input(
-            "Lehrerzuganscode (optional)",
+            "Lehrerzugangscode (optional)",
             type="password",
             help="Nur ausfüllen, wenn Sie ein Lehrer sind"
-        )
-        user_class = st.text_input(
-            "Klasse",
-            value="",
-            help="z. B. 1A, 2B oder 3C"
         )
 
         res = self.authenticator.register_user()
@@ -118,10 +113,11 @@ class LoginManager:
             else:
                 role = "student"
                 st.success("✓ Schüler-Account erstellt")
+                st.info("Dein Account wurde erstellt. Eine Lehrperson weist dich später einer Klasse zu.")
 
             if res[1] in self.auth_credentials['usernames']:
                 self.auth_credentials['usernames'][res[1]]['role'] = role
-                self.auth_credentials['usernames'][res[1]]['class'] = user_class or None
+                self.auth_credentials['usernames'][res[1]]['class'] = None
 
             try:
                 self._save_auth_credentials()

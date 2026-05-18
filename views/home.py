@@ -11,8 +11,7 @@ st.write("""
 Diese App ermöglicht Lehrpersonen, Texte einfach und strukturiert bereitzustellen. Schülerinnen und Schüler können die veröffentlichten Inhalte lesen und ihr Verständnis anschliessend durch ein integriertes Quiz überprüfen.
 """)
 
-"""
-
+st.markdown("""
 ## Diese App wurde von folgenden Personen entwickelt:
 
 - Bal       Jasleen     (baljas01@students.zhaw.ch) 
@@ -22,7 +21,7 @@ Diese App ermöglicht Lehrpersonen, Texte einfach und strukturiert bereitzustell
 
 
 
-Das gerüst für diese App wurde freundlicherweise bereitgestellt durch:
+Das Gerüst für diese App wurde freundlicherweise bereitgestellt durch:
 
 - Samuel    Wehrli      (wehs@zhaw.ch)
-"""
+""")

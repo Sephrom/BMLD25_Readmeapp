@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils.data_manager import DataManager
+from utils.app_config import get_data_manager
 from utils.document_manager import DocumentManager
 from functions.class_management_functions import (
     get_all_students_list,
@@ -10,8 +10,7 @@ from functions.class_management_functions import (
 
 st.title("👥 Klassenverwaltung & Zuteilung")
 
-# Initialisiere Manager
-data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")
+data_manager = get_data_manager()
 document_manager = DocumentManager(data_manager)
 
 st.info("Hier kannst du Schüler zu Klassen zuordnen und Dokumente klassifizieren.")

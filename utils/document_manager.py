@@ -8,6 +8,7 @@ class DocumentManager:
     def __init__(self, data_manager: DataManager):
         self.data_manager = data_manager
         self.documents_folder = "documents"
+        self.last_error = None
 
     @staticmethod
     def _validate_name(name: str, name_type: str = "folder") -> bool:
@@ -19,7 +20,23 @@ class DocumentManager:
             return False
         return True
 
+    def _clear_error(self) -> None:
+        """Setzt den letzten Fehler auf None"""
+        self.last_error = None
+
+    def _set_error(self, message: str, exc: Exception = None) -> None:
+        """Speichert eine lesbare Fehlermeldung"""
+        if exc:
+            self.last_error = f"{message} [{type(exc).__name__}]"
+        else:
+            self.last_error = message
+
+    def get_last_error(self) -> str | None:
+        """Gibt die letzte Fehlermeldung zurück oder None"""
+        return self.last_error
+
     def get_folders(self):
+        self._clear_error()
         try:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}"
             folders = []
@@ -31,10 +48,12 @@ class DocumentManager:
                         folder_name = os.path.basename(item_path)
                         folders.append(folder_name)
             return folders
-        except Exception:
+        except Exception as exc:
+            self._set_error("Ordner konnten nicht geladen werden.", exc)
             return []
 
     def get_documents_in_folder(self, folder_name: str):
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return []
 
@@ -49,10 +68,12 @@ class DocumentManager:
                         doc_name = os.path.basename(item_path)
                         documents.append(doc_name)
             return documents
-        except Exception:
+        except Exception as exc:
+            self._set_error("Dokumente konnten nicht geladen werden.", exc)
             return []
 
     def save_document(self, file_content: bytes, folder_name: str, file_name: str):
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return False
         if not self._validate_name(file_name, "file"):
@@ -70,10 +91,12 @@ class DocumentManager:
                 f.write(file_content)
 
             return True
-        except Exception:
+        except Exception as exc:
+            self._set_error("Dokument konnte nicht gespeichert werden.", exc)
             return False
 
     def create_folder(self, folder_name: str):
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return False
 
@@ -81,10 +104,12 @@ class DocumentManager:
             path = f"{self.data_manager.fs_root_folder}/{self.documents_folder}/{folder_name}"
             self.data_manager.fs.makedirs(path, exist_ok=True)
             return True
-        except Exception:
+        except Exception as exc:
+            self._set_error("Ordner konnte nicht erstellt werden.", exc)
             return False
 
     def get_document(self, folder_name: str, file_name: str) -> bytes:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return None
         if not self._validate_name(file_name, "file"):
@@ -98,7 +123,8 @@ class DocumentManager:
                 with self.data_manager.fs.open(path, 'rb') as f:
                     return f.read()
             return None
-        except Exception:
+        except Exception as exc:
+            self._set_error("Dokument konnte nicht geladen werden.", exc)
             return None
 
     def load_quiz(self, folder_name: str, document_name: str) -> dict:
@@ -111,6 +137,7 @@ class DocumentManager:
         return self.data_manager.load_app_data(quiz_file, initial_value={"questions": []})
 
     def save_quiz(self, folder_name: str, document_name: str, quiz_data: dict) -> bool:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return False
         if not self._validate_name(document_name, "file"):
@@ -120,7 +147,8 @@ class DocumentManager:
         try:
             self.data_manager.save_app_data(quiz_data, quiz_file)
             return True
-        except Exception:
+        except Exception as exc:
+            self._set_error("Quiz-Daten konnten nicht gespeichert werden.", exc)
             return False
 
     def load_document_meta(self, folder_name: str, document_name: str) -> dict:
@@ -146,6 +174,7 @@ class DocumentManager:
             return False
 
     def quiz_exists(self, folder_name: str, document_name: str) -> bool:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return False
         if not self._validate_name(document_name, "file"):
@@ -154,10 +183,12 @@ class DocumentManager:
         quiz_file = f"documents/{folder_name}/{document_name}_quiz.json"
         try:
             return self.data_manager.fs.exists(f"{self.data_manager.fs_root_folder}/{quiz_file}")
-        except Exception:
+        except Exception as exc:
+            self._set_error("Quiz-Status konnte nicht überprüft werden.", exc)
             return False
 
     def delete_document(self, folder_name: str, file_name: str) -> bool:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
             return False
         if not self._validate_name(file_name, "file"):
@@ -192,7 +223,8 @@ class DocumentManager:
 
                 return True
             return False
-        except Exception:
+        except Exception as exc:
+            self._set_error("Dokument konnte nicht gelöscht werden.", exc)
             return False
 
     def load_class_assignments(self, folder_name: str, document_name: str) -> dict:

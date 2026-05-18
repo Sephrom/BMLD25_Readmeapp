@@ -42,8 +42,9 @@ class LogManager:
             return "🔴 Überfällig"
         return "🔴 Nicht begonnen"
 
-    def _get_or_create_log_df(self, log_file: str) -> pd.DataFrame:
-        columns = [
+    def _get_log_columns(self) -> list:
+        """Gibt die Standard-Spalten für Log-DataFrames zurück."""
+        return [
             'student_name',
             'student_username',
             'document_name',
@@ -53,61 +54,78 @@ class LogManager:
             'quiz_attempts',
             'last_quiz_score'
         ]
+
+    def _migrate_action_log_format(self, log_df: pd.DataFrame, log_file: str) -> pd.DataFrame:
+        """Migriert alte 'action'-basierte Log-Struktur in spaltenweise Struktur."""
+        if 'action' not in log_df.columns:
+            return log_df
+        
+        unique_combos = log_df[['student_name', 'student_username', 'document_name']].drop_duplicates()
+        new_rows = []
+
+        for _, combo in unique_combos.iterrows():
+            mask = (
+                (log_df['student_username'] == combo['student_username']) &
+                (log_df['document_name'] == combo['document_name'])
+            )
+            old_entries = log_df[mask]
+
+            opened_ts = None
+            read_ts = None
+
+            if any(old_entries['action'] == 'open'):
+                opened_ts = old_entries[old_entries['action'] == 'open']['timestamp'].iloc[0]
+            if any(old_entries['action'] == 'read'):
+                read_ts = old_entries[old_entries['action'] == 'read']['timestamp'].iloc[0]
+
+            new_row = {
+                'student_name': combo['student_name'],
+                'student_username': combo['student_username'],
+                'document_name': combo['document_name'],
+                'opened_timestamp': opened_ts,
+                'read_timestamp': read_ts,
+                'quiz_passed_timestamp': None,
+                'quiz_attempts': 0,
+                'last_quiz_score': None
+            }
+            new_rows.append(new_row)
+
+        new_df = pd.DataFrame(new_rows)
+        self.data_manager.save_app_data(new_df, log_file)
+        return new_df
+
+    def _ensure_log_columns(self, log_df: pd.DataFrame, columns: list) -> pd.DataFrame:
+        """Stellt sicher, dass alle erforderlichen Spalten vorhanden sind."""
+        for col in columns:
+            if col not in log_df.columns:
+                log_df[col] = None
+        return log_df
+
+    def _cast_log_columns(self, log_df: pd.DataFrame) -> pd.DataFrame:
+        """Setzt die korrekten Datentypen für Log-Spalten."""
+        log_df = log_df.astype({
+            'student_name': 'object',
+            'student_username': 'object',
+            'document_name': 'object',
+            'opened_timestamp': 'object',
+            'read_timestamp': 'object',
+            'quiz_passed_timestamp': 'object',
+            'quiz_attempts': 'int64',
+            'last_quiz_score': 'float64'
+        }, errors='ignore')
+        return log_df
+
+    def _get_or_create_log_df(self, log_file: str) -> pd.DataFrame:
+        columns = self._get_log_columns()
         try:
             log_df = self.data_manager.load_app_data(
                 log_file,
                 initial_value=pd.DataFrame(columns=columns)
             )
 
-            if 'action' in log_df.columns:
-                unique_combos = log_df[['student_name', 'student_username', 'document_name']].drop_duplicates()
-                new_rows = []
-
-                for _, combo in unique_combos.iterrows():
-                    mask = (
-                        (log_df['student_username'] == combo['student_username']) &
-                        (log_df['document_name'] == combo['document_name'])
-                    )
-                    old_entries = log_df[mask]
-
-                    opened_ts = None
-                    read_ts = None
-
-                    if any(old_entries['action'] == 'open'):
-                        opened_ts = old_entries[old_entries['action'] == 'open']['timestamp'].iloc[0]
-                    if any(old_entries['action'] == 'read'):
-                        read_ts = old_entries[old_entries['action'] == 'read']['timestamp'].iloc[0]
-
-                    new_row = {
-                        'student_name': combo['student_name'],
-                        'student_username': combo['student_username'],
-                        'document_name': combo['document_name'],
-                        'opened_timestamp': opened_ts,
-                        'read_timestamp': read_ts,
-                        'quiz_passed_timestamp': None,
-                        'quiz_attempts': 0,
-                        'last_quiz_score': None
-                    }
-                    new_rows.append(new_row)
-
-                new_df = pd.DataFrame(new_rows)
-                self.data_manager.save_app_data(new_df, log_file)
-                return new_df
-
-            for col in columns:
-                if col not in log_df.columns:
-                    log_df[col] = None
-
-            log_df = log_df.astype({
-                'student_name': 'object',
-                'student_username': 'object',
-                'document_name': 'object',
-                'opened_timestamp': 'object',
-                'read_timestamp': 'object',
-                'quiz_passed_timestamp': 'object',
-                'quiz_attempts': 'int64',
-                'last_quiz_score': 'float64'
-            }, errors='ignore')
+            log_df = self._migrate_action_log_format(log_df, log_file)
+            log_df = self._ensure_log_columns(log_df, columns)
+            log_df = self._cast_log_columns(log_df)
 
             return log_df
 

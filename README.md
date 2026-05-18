@@ -26,9 +26,9 @@ Ziel der Anwendung ist es, Lehrpersonen eine einfache Uebersicht darueber zu geb
   - Gelb: gelesen, Quiz noch offen
   - Rot: nicht begonnen oder ueberfaellig
 
-### Schuelerinnen und Schueler
+### Schülerinnen und Schüler
 
-- Registrierung mit Klassenzuweisung
+- Registrierung ohne Klassenangabe (wird später durch Lehrperson zugewiesen)
 - Anzeige der zugewiesenen Dokumente
 - PDF-Dokumente direkt in der App ansehen
 - Dokumente als gelesen markieren
@@ -97,12 +97,14 @@ Wichtig:
 
 ## Projektstruktur
 
+
 ```text
 BMLD25_Readmeapp/
   app.py
   requirements.txt
   README.md
   utils/
+    app_config.py
     data_handler.py
     data_manager.py
     document_manager.py
@@ -129,12 +131,14 @@ BMLD25_Readmeapp/
 ## Wichtige Module
 
 - `app.py`: Einstiegspunkt, Login und rollenbasierte Navigation
+- `app_config.py`: Zentrale Konfiguration für DataManager
 - `utils/data_manager.py`: Verbindung zu WebDAV oder lokalem Dateisystem
 - `utils/document_manager.py`: Verwaltung von Dokumenten, Quiz, Metadaten und Klassenzuweisungen
 - `utils/log_manager.py`: Speichert und berechnet Bearbeitungsstatus
 - `utils/login_manager.py`: Registrierung, Login und Rollenlogik
 - `views/archive_teacher.py`: Lehreransicht fuer Upload, Quiz, Zuweisung und Fortschritt
 - `views/archive_student.py`: Schueleransicht fuer Dokumente, Lesen und Quiz
+- `class_assignment`.py: Verwaltung von Klassenzuweisungen
 
 ## Manuelles Testprotokoll
 
@@ -156,7 +160,6 @@ Vor einer Abgabe oder Praesentation sollte folgender Ablauf getestet werden:
 
 ## Bekannte Grenzen
 
-- Die App nutzt Dateien auf WebDAV als einfache Datenhaltung. Bei sehr vielen gleichzeitigen Nutzenden kann es zu Konflikten kommen.
 - Es gibt keine feingranulare Rechteverwaltung ausser den Rollen `teacher` und `student`.
 - Quizfragen unterstuetzen aktuell Multiple-Choice mit vier Antwortoptionen.
 - Es gibt noch keine automatische Benachrichtigung bei neuen oder ueberfaelligen Dokumenten.

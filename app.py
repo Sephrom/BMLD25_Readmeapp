@@ -1,19 +1,13 @@
-
-import pandas as pd 
 import streamlit as st
 
-
-from utils.data_manager import DataManager
+from utils.app_config import get_data_manager
 from utils.login_manager import LoginManager
 
+st.set_page_config(page_title="ReadMeApp", page_icon=":material/home:")
 
-st.set_page_config(page_title="Meine App", page_icon=":material/home:")
-data_manager = DataManager(       # initialize data manager
-    fs_protocol='webdav',         # protocol for the filesystem, use webdav for switch drive
-    fs_root_folder="BMLD_App_DB"  # folder on switch drive where the data is stored
-    ) 
-login_manager = LoginManager(data_manager) # handles user login and registration
-login_manager.login_register()             # stops if not logged in
+data_manager = get_data_manager()
+login_manager = LoginManager(data_manager)
+login_manager.login_register()
 
 # Lade die Rolle und Klasse des aktuellen Benutzers aus den Credentials
 user_info = login_manager.auth_credentials['usernames'].get(st.session_state.get('username'), {})
@@ -22,17 +16,6 @@ user_class = user_info.get('class', None)
 
 st.session_state['role'] = user_role
 st.session_state['class'] = user_class
-
-
-if 'data_df' not in st.session_state:
-    st.session_state['data_df'] = data_manager.load_user_data(
-        'data.csv',                     # The file on switch drive where the data is stored
-        initial_value=pd.DataFrame(),   # Initial value if the file does not exist
-        parse_dates=['timestamp']       # Parse timestamp as datetime
-    )
-
-
-
 
 # Navigation basierend auf Rolle
 user_role = st.session_state.get('role', 'student')

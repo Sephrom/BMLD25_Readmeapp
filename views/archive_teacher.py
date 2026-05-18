@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.data_manager import DataManager
+from utils.app_config import get_data_manager
 from utils.log_manager import LogManager
 from utils.document_manager import DocumentManager
 from functions.teacher_archive_functions import handle_document_upload, render_quiz_editor
@@ -7,12 +7,11 @@ from functions.ui_helpers import render_status_legend
 
 st.title("📚 Archiv - Dokumente verwalten")
 
-data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")
+data_manager = get_data_manager()
 log_manager = LogManager(data_manager)
 document_manager = DocumentManager(data_manager)
 
 st.info("Als Lehrer kannst du hier Dokumente hochladen und die Aktivitäten deiner Schüler ansehen.")
-
 st.divider()
 
 col1, col2 = st.columns(2)
@@ -54,6 +53,9 @@ st.divider()
 st.subheader("📋 Schüler-Aktivitäten & Dokumente")
 
 folders_for_logs = document_manager.get_folders()
+
+if document_manager.get_last_error():
+    st.error(f"⚠️ {document_manager.get_last_error()}")
 
 if not folders_for_logs:
     st.info("Keine Ordner vorhanden.")

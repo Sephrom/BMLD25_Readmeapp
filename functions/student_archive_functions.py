@@ -116,6 +116,33 @@ def render_document_buttons(log_manager, selected_folder, doc_name):
         st.success(f"✓ '{doc_name}' als gelesen markiert!")
 
 
+def _get_valid_quiz_questions(quiz_def):
+    """Filtert nur vollständige Fragen aus dem Quiz-Objekt."""
+    return [
+        q.copy() for q in quiz_def.get("questions", [])
+        if q.get("question", "").strip()
+        and any(opt.strip() for opt in q.get("options", []))
+    ]
+
+
+def _shuffle_questions_and_answers(questions):
+    """Mischt Fragen und deren Antwortoptionen."""
+    random.shuffle(questions)
+    for q in questions:
+        correct_answer = q["options"][q["correct_index"]]
+        shuffled_options = random.sample(q["options"], len(q["options"]))
+        q["options"] = shuffled_options
+        q["correct_answer"] = correct_answer
+    return questions
+
+
+def _store_quiz_in_session(selected_folder, doc_name, questions):
+    """Speichert Quiz-Status im Session State."""
+    st.session_state[f"quiz_{selected_folder}_{doc_name}_questions"] = questions
+    st.session_state[f"quiz_{selected_folder}_{doc_name}_current"] = 0
+    st.session_state[f"quiz_{selected_folder}_{doc_name}_answers"] = [None] * len(questions)
+
+
 def handle_quiz_start(document_manager, selected_folder, doc_name):
     """
     Initialisiert ein Quiz im Session State
@@ -123,21 +150,9 @@ def handle_quiz_start(document_manager, selected_folder, doc_name):
     quiz_def = document_manager.load_quiz(selected_folder, doc_name)
     if quiz_def.get("questions"):
         if st.button("📝 Quiz starten", key=f"start_quiz_{selected_folder}_{doc_name}"):
-            questions = [
-                q.copy() for q in quiz_def["questions"]
-                if q.get("question", "").strip()
-                and any(opt.strip() for opt in q.get("options", []))
-            ]
-            random.shuffle(questions)
-            for q in questions:
-                correct_answer = q["options"][q["correct_index"]]
-                shuffled_options = random.sample(q["options"], len(q["options"]))
-                q["options"] = shuffled_options
-                q["correct_answer"] = correct_answer
-
-            st.session_state[f"quiz_{selected_folder}_{doc_name}_questions"] = questions
-            st.session_state[f"quiz_{selected_folder}_{doc_name}_current"] = 0
-            st.session_state[f"quiz_{selected_folder}_{doc_name}_answers"] = [None] * len(questions)
+            questions = _get_valid_quiz_questions(quiz_def)
+            questions = _shuffle_questions_and_answers(questions)
+            _store_quiz_in_session(selected_folder, doc_name, questions)
 
 
 def render_pdf_viewer(document_manager, selected_folder, doc_name):
@@ -199,45 +214,6 @@ def render_quiz_form(selected_folder, doc_name):
 
             submit = st.form_submit_button("Quiz abschliessen")
 
-        return submit
+        return submit is not None
 
     return False
-
-
-def handle_quiz_submit(log_manager, selected_folder, doc_name, questions):
-    """
-    Verarbeitet die Quiz-Einreichung und Bewertung
-    """
-    quiz_key = f"quiz_{selected_folder}_{doc_name}"
-    correct = 0
-
-    for idx, question in enumerate(questions):
-        selected = st.session_state.get(f"{quiz_key}_answer_{idx}")
-        if selected is None:
-            continue
-        if question["options"][selected] == question["correct_answer"]:
-            correct += 1
-
-    score = correct / len(questions) if questions else 0
-    passed = score >= 0.8
-
-    student_name = st.session_state.get('name', 'Unbekannt')
-    student_username = st.session_state.get('username', 'Unbekannt')
-    log_manager.record_quiz_attempt(
-        selected_folder,
-        doc_name,
-        student_name=student_name,
-        student_username=student_username,
-        score=score,
-        passed=passed
-    )
-
-    st.success(f"Du hast {int(score * 100)}% erreicht. {'✓ Bestanden' if passed else '✗ Nicht bestanden'}")
-
-    # Cleanup
-    if f"{quiz_key}_questions" in st.session_state:
-        del st.session_state[f"{quiz_key}_questions"]
-    if f"{quiz_key}_current" in st.session_state:
-        del st.session_state[f"{quiz_key}_current"]
-    if f"{quiz_key}_answers" in st.session_state:
-        del st.session_state[f"{quiz_key}_answers"]

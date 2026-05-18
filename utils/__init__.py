@@ -1,1 +1,1 @@
-# Empty file
+"""Utility package for the ReadMeApp."""
