@@ -27,11 +27,11 @@ with col1:
         new_folder_name = st.text_input("Ordnername")
         if st.button("Ordner erstellen"):
             if new_folder_name.strip():
-                if document_manager.create_folder(new_folder_name):
+                if document_manager.create_class(new_folder_name):
                     st.success(f"✓ Ordner '{new_folder_name}' erstellt!")
                     st.rerun()
                 else:
-                    st.error("Fehler beim Erstellen des Ordners")
+                    st.error(document_manager.get_last_error() or "Fehler beim Erstellen des Ordners")
             else:
                 st.error("Ordnername kann nicht leer sein")
     else:
@@ -47,6 +47,8 @@ with col1:
                         uploaded_file, due_date
                     ):
                         st.rerun()
+                    elif document_manager.get_last_error():
+                        st.error(document_manager.get_last_error())
 
 st.divider()
 
@@ -124,7 +126,7 @@ else:
                         st.success(f"✓ Dokument wurde den Klassen zugewiesen: {', '.join(selected_classes) if selected_classes else 'keine'}")
                         st.rerun()
                     else:
-                        st.error("Fehler beim Speichern der Klassenzuordnung")
+                        st.error(document_manager.get_last_error() or "Fehler beim Speichern der Klassenzuordnung")
 
             st.write("**Schüler, die dieses Dokument gelesen haben:**")
 

@@ -75,8 +75,10 @@ class DocumentManager:
     def save_document(self, file_content: bytes, folder_name: str, file_name: str):
         self._clear_error()
         if not self._validate_name(folder_name, "folder"):
+            self._set_error("Zielordner ist ungueltig.")
             return False
         if not self._validate_name(file_name, "file"):
+            self._set_error("Dateiname ist ungueltig.")
             return False
 
         try:
@@ -88,7 +90,7 @@ class DocumentManager:
                 self.data_manager.fs.makedirs(folder_path, exist_ok=True)
 
             with self.data_manager.fs.open(path, 'wb') as f:
-                f.write(file_content)
+                f.write(bytes(file_content))
 
             return True
         except Exception as exc:
@@ -98,6 +100,7 @@ class DocumentManager:
     def create_folder(self, folder_name: str):
         self._clear_error()
         if not self._validate_name(folder_name, "folder"):
+            self._set_error("Ordnername ist ungueltig.")
             return False
 
         try:
@@ -107,6 +110,42 @@ class DocumentManager:
         except Exception as exc:
             self._set_error("Ordner konnte nicht erstellt werden.", exc)
             return False
+
+    def load_classes(self) -> list:
+        """Laedt gespeicherte Klassen aus der zentralen Klassenliste."""
+        try:
+            data = self.data_manager.load_app_data("classes.json", initial_value={"classes": []})
+            return sorted(set(data.get("classes", [])))
+        except Exception:
+            return []
+
+    def save_classes(self, classes: list) -> bool:
+        """Speichert die zentrale Klassenliste."""
+        try:
+            clean_classes = sorted({
+                class_name.strip()
+                for class_name in classes
+                if self._validate_name(class_name, "class")
+            })
+            self.data_manager.save_app_data({"classes": clean_classes}, "classes.json")
+            return True
+        except Exception as exc:
+            self._set_error("Klassenliste konnte nicht gespeichert werden.", exc)
+            return False
+
+    def create_class(self, class_name: str) -> bool:
+        """Erstellt eine Klasse in der Klassenliste und als Dokumentordner."""
+        self._clear_error()
+        if not self._validate_name(class_name, "class"):
+            self._set_error("Klassenname ist ungueltig.")
+            return False
+
+        class_name = class_name.strip()
+        classes = self.load_classes()
+        if class_name not in classes:
+            classes.append(class_name)
+
+        return self.save_classes(classes) and self.create_folder(class_name)
 
     def get_document(self, folder_name: str, file_name: str) -> bytes:
         self._clear_error()
@@ -161,16 +200,20 @@ class DocumentManager:
         return self.data_manager.load_app_data(meta_file, initial_value={"due_date": None})
 
     def save_document_meta(self, folder_name: str, document_name: str, meta_data: dict) -> bool:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
+            self._set_error("Zielordner ist ungueltig.")
             return False
         if not self._validate_name(document_name, "file"):
+            self._set_error("Dateiname ist ungueltig.")
             return False
 
         meta_file = f"documents/{folder_name}/{document_name}.meta.json"
         try:
             self.data_manager.save_app_data(meta_data, meta_file)
             return True
-        except Exception:
+        except Exception as exc:
+            self._set_error("Dokument-Metadaten konnten nicht gespeichert werden.", exc)
             return False
 
     def quiz_exists(self, folder_name: str, document_name: str) -> bool:
@@ -237,22 +280,27 @@ class DocumentManager:
         return self.data_manager.load_app_data(classes_file, initial_value={"assigned_classes": []})
 
     def save_class_assignments(self, folder_name: str, document_name: str, classes_list: list) -> bool:
+        self._clear_error()
         if not self._validate_name(folder_name, "folder"):
+            self._set_error("Ordnername ist ungueltig.")
             return False
         if not self._validate_name(document_name, "file"):
+            self._set_error("Dateiname ist ungueltig.")
             return False
 
         classes_file = f"documents/{folder_name}/{document_name}.classes.json"
         try:
             self.data_manager.save_app_data({"assigned_classes": classes_list}, classes_file)
             return True
-        except Exception:
+        except Exception as exc:
+            self._set_error("Klassenzuordnung konnte nicht gespeichert werden.", exc)
             return False
 
     def get_all_classes_from_students(self) -> list:
         try:
             creds = self.data_manager.load_app_data('credentials.yaml', initial_value={"usernames": {}})
-            classes = set()
+            classes = set(self.load_classes())
+            classes.update(self.get_folders())
             for user_data in creds.get("usernames", {}).values():
                 user_class = user_data.get("class")
                 if user_class:

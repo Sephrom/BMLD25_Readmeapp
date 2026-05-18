@@ -104,10 +104,14 @@ class LoginManager:
             help="Nur ausfüllen, wenn Sie ein Lehrer sind"
         )
 
-        res = self.authenticator.register_user(captcha=True)
+        try:
+            res = self.authenticator.register_user(captcha=True)
+        except Exception as e:
+            st.error(f"Registrierung fehlgeschlagen: {e}")
+            return
 
         if res[1] is not None:
-            if teacher_code == teacher_code_secret:
+            if teacher_code.strip().lower() == teacher_code_secret.strip().lower():
                 role = "teacher"
                 st.success("✓ Lehrer-Account erstellt")
             else:

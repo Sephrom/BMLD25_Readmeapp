@@ -28,7 +28,7 @@ def handle_document_upload(document_manager, selected_folder, uploaded_file, due
         if success:
             st.success(f"✓ '{uploaded_file.name}' in '{selected_folder}' hochgeladen!")
         else:
-            st.error("Fehler beim Hochladen")
+            st.error(document_manager.get_last_error() or "Fehler beim Hochladen")
 
         return success
     except Exception as e:

@@ -16,7 +16,7 @@ def get_all_students_list(data_manager):
     students = []
     
     for username, user_data in creds.get("usernames", {}).items():
-        if user_data.get("role") == "student":
+        if user_data.get("role", "student") == "student":
             display_name = user_data.get("name") or user_data.get("username") or username
             students.append({
                 "Benutzername": username,
