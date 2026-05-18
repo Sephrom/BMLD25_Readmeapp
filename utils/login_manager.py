@@ -77,7 +77,7 @@ class LoginManager:
             self._register()
 
     def _login(self):
-        self.authenticator.login(captcha=True)
+        self.authenticator.login()
         if st.session_state["authentication_status"] is False:
             st.error("Username/password is incorrect")
         else:
